@@ -576,31 +576,46 @@ async function iniciarApp() {
 // ════════════════════════════════════════════════════════
 async function gsGet(hoja) {
   if(!CONFIG.APPS_SCRIPT_URL) return null;
-  try {
-    const url = CONFIG.APPS_SCRIPT_URL + '?accion=get&hoja=' + encodeURIComponent(hoja);
-    const r = await fetch(url);
-    if(!r.ok) return null;
-    const d = await r.json();
-    if(!d.ok || !d.datos || d.datos.length<2) return [];
-    const headers = d.datos[0];
-    return d.datos.slice(1).map(row => {
-      const obj={};
-      headers.forEach((h,i) => obj[h] = row[i]||'');
-      return obj;
-    });
-  } catch(e) { return null; }
+  return new Promise((resolve) => {
+    const cbName = 'cb_' + Math.random().toString(36).slice(2);
+    window[cbName] = function(d) {
+      delete window[cbName];
+      document.getElementById('jsonp-'+cbName)?.remove();
+      if(!d.ok || !d.datos || d.datos.length<2) { resolve([]); return; }
+      const headers = d.datos[0];
+      resolve(d.datos.slice(1).map(row => {
+        const obj={};
+        headers.forEach((h,i) => obj[h] = row[i]||'');
+        return obj;
+      }));
+    };
+    const s = document.createElement('script');
+    s.id = 'jsonp-'+cbName;
+    s.onerror = () => { delete window[cbName]; s.remove(); resolve(null); };
+    s.src = CONFIG.APPS_SCRIPT_URL + '?accion=get&hoja=' + encodeURIComponent(hoja) + '&callback=' + cbName;
+    document.head.appendChild(s);
+    setTimeout(() => { if(window[cbName]){ delete window[cbName]; s.remove(); resolve(null); } }, 8000);
+  });
 }
 
 async function gsPost(accion, datos) {
   if(!CONFIG.APPS_SCRIPT_URL) return false;
-  try {
-    const r = await fetch(CONFIG.APPS_SCRIPT_URL, {
-      method:'POST', body:JSON.stringify({accion, datos}),
-      headers:{'Content-Type':'application/json'}
-    });
-    const d = await r.json();
-    return d.ok;
-  } catch(e) { return false; }
+  return new Promise((resolve) => {
+    const cbName = 'cb_' + Math.random().toString(36).slice(2);
+    window[cbName] = function(d) {
+      delete window[cbName];
+      document.getElementById('jsonp-'+cbName)?.remove();
+      resolve(d && d.ok);
+    };
+    // Encode POST data as GET params for JSONP
+    const params = encodeURIComponent(JSON.stringify({accion, datos}));
+    const s = document.createElement('script');
+    s.id = 'jsonp-'+cbName;
+    s.onerror = () => { delete window[cbName]; s.remove(); resolve(false); };
+    s.src = CONFIG.APPS_SCRIPT_URL + '?payload=' + params + '&callback=' + cbName;
+    document.head.appendChild(s);
+    setTimeout(() => { if(window[cbName]){ delete window[cbName]; s.remove(); resolve(false); } }, 8000);
+  });
 }
 
 async function cargarTodo() {
@@ -1392,9 +1407,11 @@ function guardarConfigGS(){
 
 async function testConexion(){
   toast('Probando conexión...');
-  const r=await gsGet(SHEETS.CATALOGO);
-  if(r!==null){toast('✓ Conexión OK — Google Sheets activo');gsConnected=true;setSyncStatus('ok');}
-  else toast('✗ Sin conexión — revisa la Apps Script URL','error');
+  try {
+    const r=await gsGet(SHEETS.USUARIOS);
+    if(r!==null){toast('✓ Conexión OK — Google Sheets activo');gsConnected=true;setSyncStatus('ok');}
+    else toast('✗ Sin conexión — revisa la Apps Script URL','error');
+  } catch(e) { toast('✗ Error: '+e.message,'error'); }
 }
 
 async function sincronizarAhora(){
@@ -1448,3 +1465,4 @@ function fmt(n){return Number(n).toLocaleString('es-ES',{minimumFractionDigits:2
 </script>
 </body>
 </html>
+
