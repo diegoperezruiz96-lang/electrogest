@@ -334,6 +334,7 @@ select option{background:var(--panel);color:var(--text)}
       <button class="modal-close" onclick="cerrarModal('modal-cliente')">✕</button>
     </div>
     <div class="modal-body">
+      <input type="hidden" id="cli-edit-id">
       <label>Nombre / Razón Social</label>
       <input type="text" id="cli-nombre" placeholder="García Reformas S.L.">
       <label>CIF / DNI</label>
@@ -618,6 +619,36 @@ async function gsPost(accion, datos) {
   });
 }
 
+async function gsUpdate(hoja, keyCol, keyVal, datos) {
+  if(!CONFIG.APPS_SCRIPT_URL) return false;
+  return new Promise((resolve) => {
+    const cbName = 'cb_' + Math.random().toString(36).slice(2);
+    window[cbName] = function(d) { delete window[cbName]; document.getElementById('jsonp-'+cbName)?.remove(); resolve(d && d.ok); };
+    const params = encodeURIComponent(JSON.stringify({accion:'update', datos:{hoja, keyCol, keyVal, fila:datos}}));
+    const s = document.createElement('script');
+    s.id = 'jsonp-'+cbName;
+    s.onerror = () => { delete window[cbName]; s.remove(); resolve(false); };
+    s.src = CONFIG.APPS_SCRIPT_URL + '?payload=' + params + '&callback=' + cbName;
+    document.head.appendChild(s);
+    setTimeout(() => { if(window[cbName]){ delete window[cbName]; s.remove(); resolve(false); } }, 8000);
+  });
+}
+
+async function gsDelete(hoja, keyCol, keyVal) {
+  if(!CONFIG.APPS_SCRIPT_URL) return false;
+  return new Promise((resolve) => {
+    const cbName = 'cb_' + Math.random().toString(36).slice(2);
+    window[cbName] = function(d) { delete window[cbName]; document.getElementById('jsonp-'+cbName)?.remove(); resolve(d && d.ok); };
+    const params = encodeURIComponent(JSON.stringify({accion:'delete', datos:{hoja, keyCol, keyVal}}));
+    const s = document.createElement('script');
+    s.id = 'jsonp-'+cbName;
+    s.onerror = () => { delete window[cbName]; s.remove(); resolve(false); };
+    s.src = CONFIG.APPS_SCRIPT_URL + '?payload=' + params + '&callback=' + cbName;
+    document.head.appendChild(s);
+    setTimeout(() => { if(window[cbName]){ delete window[cbName]; s.remove(); resolve(false); } }, 8000);
+  });
+}
+
 async function cargarTodo() {
   setSyncStatus('loading');
 
@@ -779,13 +810,15 @@ function renderProyectos(filtro='') {
   const el = document.getElementById('lista-proyectos');
   el.innerHTML = items.length ? items.map(p=>{
     const badgeCls = p.estado==='EN CURSO'?'badge-verde':p.estado==='CERRADO'?'badge-gris':p.estado==='PENDIENTE'?'badge-naranja':'badge-rojo';
-    return `<div class="list-item" onclick="verProyecto('${p.num}')">
-      <div class="list-item-left">
+    return `<div class="list-item">
+      <div class="list-item-left" onclick="verProyecto('${p.num}')" style="cursor:pointer">
         <div class="list-item-title">${p.num} — ${p.desc||''}</div>
         <div class="list-item-sub">${p.cliente||'Sin cliente'} · ${p.fi||''}</div>
       </div>
-      <div class="list-item-right">
+      <div class="list-item-right" style="display:flex;gap:6px;align-items:center">
         <span class="badge ${badgeCls}">${p.estado||'—'}</span>
+        <button class="btn-xs btn-ghost" onclick="editarProyecto('${p.num}')">✏️</button>
+        <button class="btn-xs btn-danger" onclick="eliminarProyecto('${p.num}')">🗑</button>
       </div>
     </div>`;
   }).join('') : '<div class="empty-state"><div class="empty-icon">📋</div><p>Sin proyectos. Crea el primero.</p></div>';
@@ -794,6 +827,7 @@ function renderProyectos(filtro='') {
 function filtrarProyectos(v) { renderProyectos(v); }
 
 function abrirModalProyecto() {
+  if(document.getElementById('proy-edit-num')) document.getElementById('proy-edit-num').value='';
   const sel = document.getElementById('proy-cliente');
   sel.innerHTML = '<option value="">— Selecciona cliente —</option>' +
     DB.clientes.map(c=>`<option value="${c.nombre}">${c.nombre}</option>`).join('');
@@ -801,6 +835,30 @@ function abrirModalProyecto() {
   abrirModal('modal-proyecto');
 }
 
+function editarProyecto(num){
+  const p=DB.proyectos.find(x=>x.num===num);if(!p)return;
+  if(!document.getElementById('proy-edit-num')){
+    const inp=document.createElement('input');inp.type='hidden';inp.id='proy-edit-num';
+    document.getElementById('proy-num').parentNode.insertBefore(inp,document.getElementById('proy-num'));
+  }
+  document.getElementById('proy-edit-num').value=num;
+  document.getElementById('proy-num').value=p.num||'';
+  document.getElementById('proy-desc').value=p.desc||'';
+  document.getElementById('proy-fi').value=p.fi||'';
+  document.getElementById('proy-ff').value=p.ff||'';
+  document.getElementById('proy-notas').value=p.notas||'';
+  document.getElementById('proy-estado').value=p.estado||'PENDIENTE';
+  const sel=document.getElementById('proy-cliente');
+  sel.innerHTML='<option value="">— Selecciona cliente —</option>'+
+    DB.clientes.map(c=>`<option value="${c.nombre}" ${c.nombre===p.cliente?'selected':''}>${c.nombre}</option>`).join('');
+  abrirModal('modal-proyecto');
+}
+async function eliminarProyecto(num){
+  if(!confirm('¿Eliminar proyecto '+num+'?'))return;
+  DB.proyectos=DB.proyectos.filter(p=>p.num!==num);guardarLocalCache();
+  if(gsConnected) await gsDelete(SHEETS.PROYECTOS,'num',num);
+  renderProyectos();toast('Proyecto eliminado');
+}
 async function guardarProyecto() {
   const num   = document.getElementById('proy-num').value.trim();
   const cli   = document.getElementById('proy-cliente').value;
@@ -811,12 +869,18 @@ async function guardarProyecto() {
   const notas = document.getElementById('proy-notas').value;
   if(!num||!desc){toast('Rellena Nº proyecto y descripción','error');return;}
   const obj={num,cliente:cli,desc,fi,ff,estado:est,notas};
-  DB.proyectos.push(obj);
-  guardarLocalCache();
-  if(gsConnected) { await gsPost('append',{hoja:SHEETS.PROYECTOS,fila:[num,cli,desc,fi,ff,est,notas]}); }
-  cerrarModal('modal-proyecto');
-  renderProyectos();
-  toast('Proyecto guardado');
+  const editNum=document.getElementById('proy-edit-num')?document.getElementById('proy-edit-num').value:'';
+  if(editNum){
+    const idx=DB.proyectos.findIndex(p=>p.num===editNum);
+    if(idx>=0)DB.proyectos[idx]=obj;guardarLocalCache();
+    if(gsConnected) await gsUpdate(SHEETS.PROYECTOS,'num',editNum,[num,cli,desc,fi,ff,est,notas]);
+    toast('Proyecto actualizado');
+  } else {
+    DB.proyectos.push(obj);guardarLocalCache();
+    if(gsConnected) await gsPost('append',{hoja:SHEETS.PROYECTOS,fila:[num,cli,desc,fi,ff,est,notas]});
+    toast('Proyecto guardado');
+  }
+  cerrarModal('modal-proyecto');renderProyectos();
 }
 
 function verProyecto(num) {
@@ -859,11 +923,14 @@ function renderClientes(filtro='') {
   const items = DB.clientes.filter(c=>!f||c.nombre.toLowerCase().includes(f)||(c.cif||'').toLowerCase().includes(f));
   document.getElementById('lista-clientes').innerHTML = items.length ? items.map(c=>`
     <div class="list-item">
-      <div class="list-item-left">
+      <div class="list-item-left" onclick="editarCliente('${c.id}')" style="cursor:pointer">
         <div class="list-item-title">${c.nombre}</div>
         <div class="list-item-sub">${c.cif||''} · ${c.tel||''} · ${c.email||''}</div>
       </div>
-      <div class="list-item-right list-item-arrow">›</div>
+      <div class="list-item-right" style="display:flex;gap:6px;align-items:center">
+        <button class="btn-xs btn-ghost" onclick="editarCliente('${c.id}')">✏️</button>
+        <button class="btn-xs btn-danger" onclick="eliminarCliente('${c.id}')">🗑</button>
+      </div>
     </div>`).join('') : '<div class="empty-state"><div class="empty-icon">👥</div><p>Sin clientes. Añade el primero.</p></div>';
 }
 function filtrarClientes(v){renderClientes(v);}
@@ -874,6 +941,7 @@ function abrirModalCliente(){
 }
 
 async function guardarCliente(){
+  const editId=document.getElementById('cli-edit-id').value;
   const nombre=document.getElementById('cli-nombre').value.trim();
   const cif=document.getElementById('cli-cif').value.trim();
   const email=document.getElementById('cli-email').value.trim();
@@ -881,13 +949,19 @@ async function guardarCliente(){
   const dir=document.getElementById('cli-dir').value.trim();
   const notas=document.getElementById('cli-notas').value;
   if(!nombre){toast('El nombre es obligatorio','error');return;}
-  const obj={id:Date.now().toString(),nombre,cif,email,tel,dir,notas};
-  DB.clientes.push(obj);
-  guardarLocalCache();
-  if(gsConnected) await gsPost('append',{hoja:SHEETS.CLIENTES,fila:[obj.id,nombre,cif,email,tel,dir,notas]});
-  cerrarModal('modal-cliente');
-  renderClientes();
-  toast('Cliente guardado');
+  if(editId){
+    const idx=DB.clientes.findIndex(c=>c.id===editId);
+    if(idx>=0)DB.clientes[idx]={id:editId,nombre,cif,email,tel,dir,notas};
+    guardarLocalCache();
+    if(gsConnected) await gsUpdate(SHEETS.CLIENTES,'id',editId,[editId,nombre,cif,email,tel,dir,notas]);
+    toast('Cliente actualizado');
+  } else {
+    const obj={id:Date.now().toString(),nombre,cif,email,tel,dir,notas};
+    DB.clientes.push(obj);guardarLocalCache();
+    if(gsConnected) await gsPost('append',{hoja:SHEETS.CLIENTES,fila:[obj.id,nombre,cif,email,tel,dir,notas]});
+    toast('Cliente guardado');
+  }
+  cerrarModal('modal-cliente');renderClientes();
 }
 
 // ════════════════════════════════════════════════════════
@@ -962,6 +1036,22 @@ function renderPreLineas(){
   document.getElementById('pre-total-display').textContent=fmt(tot);
 }
 
+function editarEstadoPresupuesto(id){
+  const p=DB.presupuestos.find(x=>x.id===id);if(!p)return;
+  const nuevo=prompt('Estado actual: '+p.estado+'\nNuevo estado (BORRADOR/ENVIADO/ACEPTADO/RECHAZADO):',p.estado);
+  if(!nuevo)return;const est=nuevo.toUpperCase();
+  if(!['BORRADOR','ENVIADO','ACEPTADO','RECHAZADO'].includes(est)){toast('Estado no válido','error');return;}
+  p.estado=est;guardarLocalCache();
+  if(gsConnected)gsUpdate(SHEETS.PRESUPUESTOS,'id',id,[p.id,p.num,p.proyecto,p.cliente,p.fecha,p.estado,p.notas,p.total]);
+  renderPresupuestos();toast('Estado actualizado');
+}
+async function eliminarPresupuesto(id){
+  if(!confirm('¿Eliminar este presupuesto?'))return;
+  DB.presupuestos=DB.presupuestos.filter(p=>p.id!==id);
+  DB.presLineas=DB.presLineas.filter(l=>l.presId!==id);
+  guardarLocalCache();if(gsConnected)await gsDelete(SHEETS.PRESUPUESTOS,'id',id);
+  renderPresupuestos();toast('Presupuesto eliminado');
+}
 async function guardarPresupuesto(){
   const num=document.getElementById('pre-num').value.trim();
   const proy=document.getElementById('pre-proyecto').value;
@@ -991,6 +1081,20 @@ async function guardarPresupuesto(){
 // ════════════════════════════════════════════════════════
 // ALBARANES
 // ════════════════════════════════════════════════════════
+function verPDFAlbaran(num){
+  const a=DB.albaranes.find(x=>x.num===num);if(!a)return;
+  const lineas=DB.albLineas.filter(l=>l.albNum===num);
+  const horas=DB.albHoras.filter(h=>h.albNum===num);
+  try{imprimirAlbaranDatos(a,lineas.length?lineas:JSON.parse(a.lineas||'[]'),horas.length?horas:JSON.parse(a.horas||'[]'));}catch(e){imprimirAlbaranDatos(a,[],[]);}
+}
+async function eliminarAlbaran(id,num){
+  if(!confirm('¿Eliminar albarán '+num+'?'))return;
+  DB.albaranes=DB.albaranes.filter(a=>a.num!==num);
+  DB.albLineas=DB.albLineas.filter(l=>l.albNum!==num);
+  DB.albHoras=DB.albHoras.filter(h=>h.albNum!==num);
+  guardarLocalCache();if(gsConnected)await gsDelete(SHEETS.ALBARANES,'id',id);
+  renderAlbaranes();renderDashboard();toast('Albarán eliminado');
+}
 function renderAlbaranes(){
   const el=document.getElementById('lista-albaranes-page');
   const items=[...DB.albaranes].sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
@@ -1465,4 +1569,5 @@ function fmt(n){return Number(n).toLocaleString('es-ES',{minimumFractionDigits:2
 </script>
 </body>
 </html>
+
 
