@@ -1767,19 +1767,7 @@ async function guardarCompra(){
       if(l.coste && parseFloat(art.coste||0)!==l.coste){
         const precioActual=parseFloat(art.coste||0).toFixed(2);
         const precioNuevo=l.coste.toFixed(2);
-        const actualizar=confirm(
-          '⚠️ CAMBIO DE PRECIO
-
-'+
-          'Artículo: '+l.desc+'
-'+
-          'Precio actual: '+precioActual+'€
-'+
-          'Precio en esta compra: '+precioNuevo+'€
-
-'+
-          '¿Actualizar el precio de coste al nuevo precio?'
-        );
+        const actualizar=confirm('\u26a0\ufe0f CAMBIO DE PRECIO\n\nArt\u00edculo: '+l.desc+'\nPrecio actual: '+precioActual+'\u20ac\nPrecio en esta compra: '+precioNuevo+'\u20ac\n\n\u00bfActualizar el precio de coste al nuevo precio?');
         if(actualizar) art.coste=l.coste;
       }
       art.stock=nuevoStock;
@@ -2107,6 +2095,5 @@ function fmt(n){return Number(n).toLocaleString('es-ES',{minimumFractionDigits:2
 </script>
 </body>
 </html>
-
 
 
