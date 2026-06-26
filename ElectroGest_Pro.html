@@ -265,9 +265,50 @@ select option{background:var(--panel);color:var(--text)}
     <div id="lista-clientes"></div>
   </div>
 
+  <!-- ── MÁS ── -->
+  <div class="page" id="page-clientes-wrap">
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button class="btn btn-ghost" onclick="showMasTab('clientes')" id="mas-tab-clientes" style="flex:1;margin-top:0;border-bottom:2px solid var(--acento)">👥 Clientes</button>
+      <button class="btn btn-ghost" onclick="showMasTab('presupuestos')" id="mas-tab-presupuestos" style="flex:1;margin-top:0">💰 Presupuestos</button>
+    </div>
+    <div id="mas-clientes">
+      <div class="search-wrap"><span class="search-icon">🔍</span><input type="text" placeholder="Buscar cliente..." oninput="filtrarClientes(this.value)"></div>
+      <button class="btn btn-primary" onclick="abrirModalCliente()" style="margin-bottom:14px">+ Nuevo Cliente</button>
+      <div id="lista-clientes"></div>
+    </div>
+    <div id="mas-presupuestos" style="display:none">
+      <button class="btn btn-primary" onclick="abrirModalPresupuesto()" style="margin-bottom:14px">+ Nuevo Presupuesto</button>
+      <div id="lista-presupuestos"></div>
+    </div>
+  </div>
+
   <!-- ── ADMIN ── -->
   <div class="page" id="page-admin">
     <div id="page-admin-content"></div>
+  </div>
+
+  <!-- ── ALMACÉN ── -->
+  <div class="page" id="page-almacen">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Buscar artículo..." oninput="filtrarAlmacen(this.value)">
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button class="btn btn-primary" onclick="abrirModalArticulo()" style="flex:1;margin-top:0">+ Nuevo Artículo</button>
+      <button class="btn btn-ghost" onclick="irPagina('compras',document.querySelector('.nav-item:nth-child(6)'));setTimeout(()=>abrirModalCompra(),100)" style="flex:1;margin-top:0">📥 Compra</button>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:12px">
+      <button class="btn-xs btn-ghost" onclick="filtroStock('todos')" id="fstock-todos" style="border-radius:20px;padding:5px 14px;font-size:.72rem;border:1px solid var(--borde);background:var(--acento);color:#000">Todos</button>
+      <button class="btn-xs btn-ghost" onclick="filtroStock('bajo')" id="fstock-bajo" style="border-radius:20px;padding:5px 14px;font-size:.72rem;border:1px solid var(--borde)">Stock bajo</button>
+      <button class="btn-xs btn-ghost" onclick="filtroStock('ok')" id="fstock-ok" style="border-radius:20px;padding:5px 14px;font-size:.72rem;border:1px solid var(--borde)">En stock</button>
+    </div>
+    <div id="lista-almacen"></div>
+  </div>
+
+  <!-- ── COMPRAS ── -->
+  <div class="page" id="page-compras">
+    <button class="btn btn-primary" onclick="abrirModalCompra()" style="margin-bottom:14px">+ Albarán de Compra</button>
+    <div id="lista-compras"></div>
   </div>
 
   <!-- BOTTOM NAV -->
@@ -278,14 +319,17 @@ select option{background:var(--panel);color:var(--text)}
     <button class="nav-item" onclick="irPagina('proyectos',this)">
       <span class="nav-icon">📋</span>Obras
     </button>
-    <button class="nav-item" onclick="irPagina('presupuestos',this)">
-      <span class="nav-icon">💰</span>Presup.
-    </button>
     <button class="nav-item" onclick="irPagina('albaranes',this)">
       <span class="nav-icon">🧾</span>Albaranes
     </button>
-    <button class="nav-item" onclick="irPagina('clientes',this)">
-      <span class="nav-icon">👥</span>Clientes
+    <button class="nav-item" onclick="irPagina('almacen',this)">
+      <span class="nav-icon">📦</span>Almacén
+    </button>
+    <button class="nav-item" onclick="irPagina('compras',this)">
+      <span class="nav-icon">🛒</span>Compras
+    </button>
+    <button class="nav-item" onclick="irPagina('clientes-wrap',this)">
+      <span class="nav-icon">👥</span>Más
     </button>
     <button class="nav-item" id="nav-admin" style="display:none" onclick="irPagina('admin',this)">
       <span class="nav-icon">⚙️</span>Admin
@@ -466,6 +510,106 @@ select option{background:var(--panel);color:var(--text)}
 </div>
 
 <!-- TOAST -->
+<!-- MODAL ARTÍCULO ALMACÉN -->
+<div class="modal-overlay" id="modal-articulo">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="modal-art-title">📦 Nuevo Artículo</h3>
+      <button class="modal-close" onclick="cerrarModal('modal-articulo')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="art-edit-ref">
+      <div class="row2">
+        <div><label>Referencia</label><input type="text" id="art-ref" placeholder="CAB-006"></div>
+        <div><label>Unidad</label><input type="text" id="art-uni" placeholder="m / ud / bol"></div>
+      </div>
+      <label>Descripción</label>
+      <input type="text" id="art-desc" placeholder="Cable 4mm² negro">
+      <label>Categoría</label>
+      <select id="art-cat">
+        <option>Cables</option><option>Tubería</option><option>Cajas</option>
+        <option>Mecanismos</option><option>Protección</option><option>Conectores</option>
+        <option>Fijación</option><option>Cinta/Señ.</option><option>Varios</option>
+      </select>
+      <div class="row3">
+        <div><label>€ Coste/ud</label><input type="number" id="art-coste" step="0.01" placeholder="0.00" oninput="calcPVenta()"></div>
+        <div><label>% Margen</label><input type="number" id="art-margen" placeholder="30" oninput="calcPVenta()"></div>
+        <div><label>€ Venta/ud</label><input type="number" id="art-pventa" step="0.01" placeholder="auto" style="background:rgba(39,174,96,.08)"></div>
+      </div>
+      <div class="row3">
+        <div><label>Stock actual</label><input type="number" id="art-stock" placeholder="0"></div>
+        <div><label>Stock mínimo</label><input type="number" id="art-min" placeholder="5"></div>
+        <div><label>Stock máximo</label><input type="number" id="art-max" placeholder="100"></div>
+      </div>
+      <label>Proveedor</label>
+      <input type="text" id="art-proveedor" placeholder="Proveedor habitual">
+      <button class="btn btn-success" onclick="guardarArticulo()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ALBARÁN DE COMPRA -->
+<div class="modal-overlay" id="modal-compra">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>🛒 Albarán de Compra</h3>
+      <button class="modal-close" onclick="cerrarModal('modal-compra')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="row2">
+        <div><label>Nº Albarán Compra</label><input type="text" id="com-num" placeholder="AC-2024-001"></div>
+        <div><label>Fecha</label><input type="date" id="com-fecha"></div>
+      </div>
+      <label>Proveedor</label>
+      <input type="text" id="com-proveedor" placeholder="Nombre del proveedor">
+      <div class="sep">Líneas de compra</div>
+      <div id="com-lineas-lista"></div>
+      <div style="background:rgba(0,0,0,.3);border-radius:8px;padding:12px;margin-top:8px">
+        <label>Artículo</label>
+        <select id="com-art-sel" onchange="comAutoFill()"><option value="">— Selecciona o añade nuevo —</option></select>
+        <input type="text" id="com-desc" placeholder="Descripción" style="margin-top:8px">
+        <div class="row3" style="margin-top:6px">
+          <div><label>Cantidad</label><input type="number" id="com-cant" step="0.5" placeholder="0"></div>
+          <div><label>€ Coste/ud</label><input type="number" id="com-coste" step="0.01" placeholder="0.00"></div>
+          <div><label>Unidad</label><input type="text" id="com-uni" placeholder="m"></div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="addLineaCompra()" style="margin-top:8px;width:100%">+ Añadir línea</button>
+      </div>
+      <div style="margin-top:12px;padding:12px;background:rgba(245,166,35,.08);border-radius:8px;border:1px solid rgba(245,166,35,.2)">
+        <div style="display:flex;justify-content:space-between;font-weight:700"><span>Total compra:</span><span style="color:var(--acento)" id="com-total-display">0,00 €</span></div>
+      </div>
+      <label>Notas</label>
+      <textarea id="com-notas" rows="2"></textarea>
+      <button class="btn btn-success" onclick="guardarCompra()">💾 Registrar Compra</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL IMPUTAR MATERIAL A PROYECTO -->
+<div class="modal-overlay" id="modal-imputar">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>📤 Imputar Material al Proyecto</h3>
+      <button class="modal-close" onclick="cerrarModal('modal-imputar')">✕</button>
+    </div>
+    <div class="modal-body">
+      <label>Proyecto</label>
+      <select id="imp-proyecto"><option value="">— Selecciona proyecto —</option></select>
+      <label>Fecha</label>
+      <input type="date" id="imp-fecha">
+      <label>Operario</label>
+      <input type="text" id="imp-operario">
+      <div class="sep">Selecciona material del almacén</div>
+      <div id="imp-catalogo-lista"></div>
+      <div id="imp-seleccionados" style="margin-top:10px"></div>
+      <div style="margin-top:12px;padding:12px;background:rgba(245,166,35,.08);border-radius:8px;border:1px solid rgba(245,166,35,.2)">
+        <div style="display:flex;justify-content:space-between;font-weight:700"><span>Total a imputar:</span><span style="color:var(--acento)" id="imp-total">0,00 €</span></div>
+      </div>
+      <button class="btn btn-success" onclick="confirmarImputacion()">✅ Imputar y generar albarán</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -491,13 +635,15 @@ const SHEETS = {
   ALBARANES:     'ALBARANES',
   ALB_LINEAS:    'ALB_LINEAS',
   ALB_HORAS:     'ALB_HORAS',
+  COMPRAS:       'COMPRAS',
+  COM_LINEAS:    'COM_LINEAS',
 };
 
 // ════════════════════════════════════════════════════════
 // ESTADO GLOBAL
 // ════════════════════════════════════════════════════════
 let SESSION = null;          // usuario logueado
-let DB = {                   // caché local de datos
+let DB = {
   usuarios:     [],
   clientes:     [],
   proyectos:    [],
@@ -507,7 +653,13 @@ let DB = {                   // caché local de datos
   albaranes:    [],
   albLineas:    [],
   albHoras:     [],
+  compras:      [],
+  comLineas:    [],
 };
+let comLineasTemp = [];
+let impSeleccionados = [];
+let almacenFiltroActual = 'todos';
+let almacenTextFiltro = '';
 let gsConnected = false;
 
 // Datos temporales del formulario de albarán
@@ -653,10 +805,11 @@ async function cargarTodo() {
   setSyncStatus('loading');
 
   if(CONFIG.APPS_SCRIPT_URL) {
-    const [usuarios, clientes, proyectos, catalogo, presupuestos, presLineas, albaranes, albLineas, albHoras] = await Promise.all([
+    const [usuarios, clientes, proyectos, catalogo, presupuestos, presLineas, albaranes, albLineas, albHoras, compras, comLineas] = await Promise.all([
       gsGet(SHEETS.USUARIOS), gsGet(SHEETS.CLIENTES), gsGet(SHEETS.PROYECTOS),
       gsGet(SHEETS.CATALOGO), gsGet(SHEETS.PRESUPUESTOS), gsGet(SHEETS.PRES_LINEAS),
       gsGet(SHEETS.ALBARANES), gsGet(SHEETS.ALB_LINEAS), gsGet(SHEETS.ALB_HORAS),
+      gsGet(SHEETS.COMPRAS), gsGet(SHEETS.COM_LINEAS),
     ]);
     if(clientes !== null) {
       DB.usuarios     = usuarios     || USERS_DEFAULT;
@@ -668,6 +821,8 @@ async function cargarTodo() {
       DB.albaranes    = albaranes    || [];
       DB.albLineas    = albLineas    || [];
       DB.albHoras     = albHoras     || [];
+      DB.compras      = compras      || [];
+      DB.comLineas    = comLineas    || [];
       gsConnected = true;
       setSyncStatus('ok');
       guardarLocalCache();
@@ -753,7 +908,10 @@ function renderPagina(id) {
   if(id==='presupuestos')renderPresupuestos();
   if(id==='albaranes')   renderAlbaranes();
   if(id==='clientes')    renderClientes();
-  if(id==='admin')       renderAdmin();
+  if(id==='almacen')        renderAlmacen();
+  if(id==='compras')        renderCompras();
+  if(id==='clientes-wrap')  {renderClientes();renderPresupuestos();}
+  if(id==='admin')          renderAdmin();
 }
 
 // ════════════════════════════════════════════════════════
@@ -910,7 +1068,10 @@ function verProyecto(num) {
         <div class="list-item-left"><div class="list-item-title">${a.num}</div><div class="list-item-sub">${a.fecha||''} · ${a.operario||''}</div></div>
         <div class="list-item-right"><div class="list-item-amount">${fmt(parseFloat(a.total||0))}</div></div>
       </div>`).join('') : '<p style="color:var(--muted);font-size:.82rem">Sin albaranes</p>'}
-    <button class="btn btn-primary" onclick="cerrarModal('modal-det-proy');abrirModalAlbaran('${num}')" style="margin-top:12px">+ Nuevo albarán para este proyecto</button>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn btn-primary" onclick="cerrarModal('modal-det-proy');abrirModalAlbaran('${num}')" style="flex:1;margin-top:0">+ Albarán manual</button>
+      <button class="btn btn-naranja" onclick="cerrarModal('modal-det-proy');abrirImputar('${num}')" style="flex:1;margin-top:0">📦 Imputar almacén</button>
+    </div>
   `;
   abrirModal('modal-det-proy');
 }
@@ -1396,6 +1557,359 @@ function imprimirAlbaranDatos(alb, lineas, horas){
 }
 
 // ════════════════════════════════════════════════════════
+// ALMACÉN
+// ════════════════════════════════════════════════════════
+function renderAlmacen(filtro) {
+  if(filtro!==undefined) almacenTextFiltro=filtro.toLowerCase();
+  const f=almacenTextFiltro;
+  let items=DB.catalogo.filter(a=>!f||a.ref.toLowerCase().includes(f)||a.desc.toLowerCase().includes(f)||String(a.cat||'').toLowerCase().includes(f));
+  if(almacenFiltroActual==='bajo') items=items.filter(a=>parseInt(a.stock||0)<=parseInt(a.min||5));
+  if(almacenFiltroActual==='ok')   items=items.filter(a=>parseInt(a.stock||0)>parseInt(a.min||5));
+  const el=document.getElementById('lista-almacen');
+  el.innerHTML=items.length?items.map(a=>{
+    const stockN=parseInt(a.stock||0);
+    const minN=parseInt(a.min||5);
+    const bajo=stockN<=minN;
+    const venta=(parseFloat(a.coste||0)*(1+parseFloat(a.margen||30)/100)).toFixed(2);
+    return `<div class="list-item" style="border-left:3px solid ${bajo?'var(--rojo)':'var(--verde)'}">
+      <div class="list-item-left">
+        <div class="list-item-title">${a.desc}</div>
+        <div class="list-item-sub">${a.ref} · ${a.cat||''} · Coste: ${parseFloat(a.coste||0).toFixed(2)}€ | Venta: ${venta}€</div>
+        <div style="margin-top:4px;display:flex;gap:8px;align-items:center">
+          <span class="badge ${bajo?'badge-rojo':'badge-verde'}">${stockN} ${a.uni||'ud'}</span>
+          ${bajo?'<span style="font-size:.7rem;color:var(--rojo)">⚠ Mín: '+minN+'</span>':''}
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex-shrink:0">
+        <button class="btn-xs btn-ghost" data-ref="${a.ref}" onclick="editarArticulo(this.dataset.ref)">✏️</button>
+        <button class="btn-xs btn-danger" data-ref="${a.ref}" onclick="eliminarArticulo(this.dataset.ref)">🗑</button>
+      </div>
+    </div>`;
+  }).join(''):'<div class="empty-state"><div class="empty-icon">📦</div><p>Sin artículos en el almacén</p></div>';
+}
+
+function filtrarAlmacen(v){renderAlmacen(v);}
+
+function showMasTab(tab){
+  document.getElementById('mas-clientes').style.display=tab==='clientes'?'block':'none';
+  document.getElementById('mas-presupuestos').style.display=tab==='presupuestos'?'block':'none';
+  document.getElementById('mas-tab-clientes').style.borderBottom=tab==='clientes'?'2px solid var(--acento)':'';
+  document.getElementById('mas-tab-presupuestos').style.borderBottom=tab==='presupuestos'?'2px solid var(--acento)':'';
+}
+
+function filtroStock(tipo){
+  almacenFiltroActual=tipo;
+  ['todos','bajo','ok'].forEach(t=>{
+    const b=document.getElementById('fstock-'+t);
+    if(b){b.style.background=t===tipo?'var(--acento)':'';b.style.color=t===tipo?'#000':'';}
+  });
+  renderAlmacen();
+}
+
+function calcPVenta(){
+  const c=parseFloat(document.getElementById('art-coste').value)||0;
+  const m=parseFloat(document.getElementById('art-margen').value)||30;
+  document.getElementById('art-pventa').value=(c*(1+m/100)).toFixed(2);
+}
+
+function abrirModalArticulo(){
+  document.getElementById('art-edit-ref').value='';
+  ['art-ref','art-desc','art-uni','art-coste','art-pventa','art-proveedor'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('art-margen').value='30';
+  document.getElementById('art-stock').value='0';
+  document.getElementById('art-min').value='5';
+  document.getElementById('art-max').value='100';
+  document.getElementById('modal-art-title').textContent='📦 Nuevo Artículo';
+  abrirModal('modal-articulo');
+}
+
+function editarArticulo(ref){
+  const a=DB.catalogo.find(x=>String(x.ref)===String(ref));
+  if(!a)return;
+  document.getElementById('art-edit-ref').value=ref;
+  document.getElementById('art-ref').value=a.ref||'';
+  document.getElementById('art-desc').value=a.desc||'';
+  document.getElementById('art-uni').value=a.uni||'';
+  document.getElementById('art-coste').value=a.coste||'';
+  document.getElementById('art-margen').value=a.margen||30;
+  document.getElementById('art-pventa').value=(parseFloat(a.coste||0)*(1+parseFloat(a.margen||30)/100)).toFixed(2);
+  document.getElementById('art-stock').value=a.stock||0;
+  document.getElementById('art-min').value=a.min||5;
+  document.getElementById('art-max').value=a.max||100;
+  document.getElementById('art-proveedor').value=a.proveedor||'';
+  document.getElementById('art-cat').value=a.cat||'Cables';
+  document.getElementById('modal-art-title').textContent='✏️ Editar Artículo';
+  abrirModal('modal-articulo');
+}
+
+async function guardarArticulo(){
+  const editRef=document.getElementById('art-edit-ref').value;
+  const ref=document.getElementById('art-ref').value.trim();
+  const desc=document.getElementById('art-desc').value.trim();
+  const uni=document.getElementById('art-uni').value.trim()||'ud';
+  const cat=document.getElementById('art-cat').value;
+  const coste=parseFloat(document.getElementById('art-coste').value)||0;
+  const margen=parseFloat(document.getElementById('art-margen').value)||30;
+  const stock=parseFloat(document.getElementById('art-stock').value)||0;
+  const min=parseFloat(document.getElementById('art-min').value)||5;
+  const max=parseFloat(document.getElementById('art-max').value)||100;
+  const proveedor=document.getElementById('art-proveedor').value.trim();
+  if(!ref||!desc){toast('Referencia y descripción obligatorias','error');return;}
+  const obj={ref,desc,cat,uni,coste,margen,stock,min,max,proveedor};
+  if(editRef){
+    const idx=DB.catalogo.findIndex(a=>String(a.ref)===String(editRef));
+    if(idx>=0) DB.catalogo[idx]=obj;
+    guardarLocalCache();
+    if(gsConnected) await gsUpdate(SHEETS.CATALOGO,'ref',editRef,[ref,desc,cat,uni,coste,margen,stock,min,max,proveedor]);
+    toast('Artículo actualizado');
+  } else {
+    if(DB.catalogo.find(a=>a.ref===ref)){toast('Esa referencia ya existe','error');return;}
+    DB.catalogo.push(obj);
+    guardarLocalCache();
+    if(gsConnected) await gsPost('append',{hoja:SHEETS.CATALOGO,fila:[ref,desc,cat,uni,coste,margen,stock,min,max,proveedor]});
+    toast('Artículo añadido');
+  }
+  cerrarModal('modal-articulo');
+  renderAlmacen();
+  renderDashboard();
+}
+
+async function eliminarArticulo(ref){
+  if(!confirm('¿Eliminar artículo '+ref+'?'))return;
+  DB.catalogo=DB.catalogo.filter(a=>String(a.ref)!==String(ref));
+  guardarLocalCache();
+  if(gsConnected) await gsDelete(SHEETS.CATALOGO,'ref',ref);
+  renderAlmacen();
+  toast('Artículo eliminado');
+}
+
+// ════════════════════════════════════════════════════════
+// ALBARANES DE COMPRA
+// ════════════════════════════════════════════════════════
+function renderCompras(){
+  const el=document.getElementById('lista-compras');
+  const items=[...DB.compras].sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+  el.innerHTML=items.length?items.map(c=>`
+    <div class="list-item">
+      <div class="list-item-left">
+        <div class="list-item-title">${c.num}</div>
+        <div class="list-item-sub">${c.proveedor||'—'} · ${c.fecha||''}</div>
+      </div>
+      <div class="list-item-right" style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        <div class="list-item-amount">${fmt(parseFloat(c.total||0))}</div>
+        <button class="btn-xs btn-danger" data-id="${c.id}" onclick="eliminarCompra(this.dataset.id)">🗑</button>
+      </div>
+    </div>`).join(''):'<div class="empty-state"><div class="empty-icon">🛒</div><p>Sin albaranes de compra</p></div>';
+}
+
+function abrirModalCompra(){
+  comLineasTemp=[];
+  document.getElementById('com-num').value='AC-'+new Date().getFullYear()+'-'+(DB.compras.length+1).toString().padStart(3,'0');
+  document.getElementById('com-fecha').value=new Date().toISOString().split('T')[0];
+  document.getElementById('com-proveedor').value='';
+  document.getElementById('com-notas').value='';
+  document.getElementById('com-art-sel').innerHTML='<option value="">— Selecciona artículo —</option>'+
+    DB.catalogo.map(a=>`<option value="${a.ref}">${a.ref} — ${a.desc}</option>`).join('');
+  renderComLineas();
+  abrirModal('modal-compra');
+}
+
+function comAutoFill(){
+  const ref=document.getElementById('com-art-sel').value;
+  const a=DB.catalogo.find(x=>x.ref===ref);
+  if(!a)return;
+  document.getElementById('com-desc').value=a.desc;
+  document.getElementById('com-coste').value=parseFloat(a.coste||0).toFixed(2);
+  document.getElementById('com-uni').value=a.uni||'ud';
+}
+
+function addLineaCompra(){
+  const ref=document.getElementById('com-art-sel').value;
+  const desc=document.getElementById('com-desc').value.trim();
+  const cant=parseFloat(document.getElementById('com-cant').value)||0;
+  const coste=parseFloat(document.getElementById('com-coste').value)||0;
+  const uni=document.getElementById('com-uni').value||'ud';
+  if(!desc||cant<=0||coste<=0){toast('Completa descripción, cantidad y precio','error');return;}
+  comLineasTemp.push({ref,desc,cant,coste,uni,importe:cant*coste});
+  renderComLineas();
+  ['com-cant','com-coste','com-desc'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('com-art-sel').value='';
+}
+
+function renderComLineas(){
+  const el=document.getElementById('com-lineas-lista');
+  el.innerHTML=comLineasTemp.map((l,i)=>`
+    <div class="linea-check" style="cursor:default">
+      <div class="linea-info">
+        <div class="linea-info-title">${l.desc}</div>
+        <div class="linea-info-sub">${l.cant} ${l.uni} × ${l.coste.toFixed(2)}€ = ${fmt(l.importe)}</div>
+      </div>
+      <button class="btn-xs btn-danger" onclick="comLineasTemp.splice(${i},1);renderComLineas()">✕</button>
+    </div>`).join('')||'<p style="color:var(--muted);font-size:.78rem">Añade líneas arriba</p>';
+  const tot=comLineasTemp.reduce((s,l)=>s+l.importe,0);
+  document.getElementById('com-total-display').textContent=fmt(tot);
+}
+
+async function guardarCompra(){
+  const num=document.getElementById('com-num').value.trim();
+  const fecha=document.getElementById('com-fecha').value;
+  const proveedor=document.getElementById('com-proveedor').value.trim();
+  const notas=document.getElementById('com-notas').value;
+  if(!num||comLineasTemp.length===0){toast('Añade al menos una línea','error');return;}
+
+  // Para cada línea, actualizar stock y preguntar sobre precio si cambia
+  for(const l of comLineasTemp){
+    const art=DB.catalogo.find(a=>String(a.ref)===String(l.ref));
+    if(art){
+      // Actualizar stock
+      const nuevoStock=parseFloat(art.stock||0)+l.cant;
+      // Comprobar si el precio ha cambiado
+      if(l.coste && parseFloat(art.coste||0)!==l.coste){
+        const precioActual=parseFloat(art.coste||0).toFixed(2);
+        const precioNuevo=l.coste.toFixed(2);
+        const actualizar=confirm(
+          '⚠️ CAMBIO DE PRECIO
+
+'+
+          'Artículo: '+l.desc+'
+'+
+          'Precio actual: '+precioActual+'€
+'+
+          'Precio en esta compra: '+precioNuevo+'€
+
+'+
+          '¿Actualizar el precio de coste al nuevo precio?'
+        );
+        if(actualizar) art.coste=l.coste;
+      }
+      art.stock=nuevoStock;
+      if(gsConnected) await gsUpdate(SHEETS.CATALOGO,'ref',art.ref,[art.ref,art.desc,art.cat,art.uni,art.coste,art.margen,art.stock,art.min,art.max||100,art.proveedor||'']);
+    }
+  }
+
+  const total=comLineasTemp.reduce((s,l)=>s+l.importe,0);
+  const obj={id:Date.now().toString(),num,fecha,proveedor,notas,total:total.toFixed(2)};
+  DB.compras.push(obj);
+  comLineasTemp.forEach(l=>DB.comLineas.push({comId:obj.id,comNum:num,...l}));
+  guardarLocalCache();
+  if(gsConnected){
+    await gsPost('append',{hoja:SHEETS.COMPRAS,fila:[obj.id,num,fecha,proveedor,notas,total.toFixed(2)]});
+    for(const l of comLineasTemp)
+      await gsPost('append',{hoja:SHEETS.COM_LINEAS,fila:[obj.id,num,l.ref||'',l.desc,l.cant,l.uni,l.coste,l.importe.toFixed(2)]});
+  }
+  comLineasTemp=[];
+  cerrarModal('modal-compra');
+  renderCompras();
+  renderAlmacen();
+  renderDashboard();
+  toast('Compra registrada — stock actualizado');
+}
+
+async function eliminarCompra(id){
+  if(!confirm('¿Eliminar este albarán de compra?'))return;
+  DB.compras=DB.compras.filter(c=>String(c.id)!==String(id));
+  guardarLocalCache();
+  if(gsConnected) await gsDelete(SHEETS.COMPRAS,'id',id);
+  renderCompras();
+  toast('Compra eliminada');
+}
+
+// ════════════════════════════════════════════════════════
+// IMPUTAR MATERIAL A PROYECTO
+// ════════════════════════════════════════════════════════
+function abrirImputar(proyNum){
+  impSeleccionados=[];
+  const sel=document.getElementById('imp-proyecto');
+  sel.innerHTML='<option value="">— Selecciona proyecto —</option>'+
+    DB.proyectos.map(p=>`<option value="${p.num}" ${p.num===proyNum?'selected':''}>${p.num} — ${p.desc||''}</option>`).join('');
+  document.getElementById('imp-fecha').value=new Date().toISOString().split('T')[0];
+  document.getElementById('imp-operario').value=SESSION.nombre||'';
+  renderImpCatalogo();
+  abrirModal('modal-imputar');
+}
+
+function renderImpCatalogo(){
+  const el=document.getElementById('imp-catalogo-lista');
+  const items=DB.catalogo.filter(a=>parseInt(a.stock||0)>0);
+  el.innerHTML=items.length?items.map(a=>`
+    <div class="linea-check" id="imp-item-${a.ref}" onclick="toggleImputar('${a.ref}',this)">
+      <input type="checkbox" id="imp-cb-${a.ref}">
+      <div class="linea-info">
+        <div class="linea-info-title">${a.desc}</div>
+        <div class="linea-info-sub">${a.ref} · Stock: ${a.stock} ${a.uni} · ${(parseFloat(a.coste||0)*(1+parseFloat(a.margen||30)/100)).toFixed(2)}€/ud</div>
+      </div>
+      <input type="number" id="imp-qty-${a.ref}" placeholder="Cant." min="0.5" step="0.5"
+        style="width:70px;padding:6px 8px;font-size:.82rem;margin-left:8px"
+        onclick="event.stopPropagation()" oninput="actualizarImpTotal()">
+    </div>`).join(''):'<p style="color:var(--muted);font-size:.82rem">No hay stock disponible</p>';
+}
+
+function toggleImputar(ref, div){
+  const cb=document.getElementById('imp-cb-'+ref);
+  cb.checked=!cb.checked;
+  div.style.background=cb.checked?'rgba(245,166,35,0.12)':'rgba(255,255,255,0.04)';
+  div.style.borderColor=cb.checked?'rgba(245,166,35,0.4)':'var(--borde)';
+  actualizarImpTotal();
+}
+
+function actualizarImpTotal(){
+  let total=0;
+  DB.catalogo.forEach(a=>{
+    const cb=document.getElementById('imp-cb-'+a.ref);
+    const qty=parseFloat(document.getElementById('imp-qty-'+a.ref)?.value||0);
+    if(cb&&cb.checked&&qty>0){
+      const pventa=parseFloat(a.coste||0)*(1+parseFloat(a.margen||30)/100);
+      total+=qty*pventa;
+    }
+  });
+  document.getElementById('imp-total').textContent=fmt(total);
+}
+
+async function confirmarImputacion(){
+  const proy=document.getElementById('imp-proyecto').value;
+  const fecha=document.getElementById('imp-fecha').value;
+  const op=document.getElementById('imp-operario').value;
+  if(!proy){toast('Selecciona un proyecto','error');return;}
+
+  const lineas=[];
+  for(const a of DB.catalogo){
+    const cb=document.getElementById('imp-cb-'+a.ref);
+    const qty=parseFloat(document.getElementById('imp-qty-'+a.ref)?.value||0);
+    if(cb&&cb.checked&&qty>0){
+      if(qty>parseFloat(a.stock||0)){toast('Stock insuficiente para '+a.ref,'error');return;}
+      const pventa=parseFloat(a.coste||0)*(1+parseFloat(a.margen||30)/100);
+      lineas.push({ref:a.ref,desc:a.desc,cant:qty,uni:a.uni,pventa,coste:parseFloat(a.coste||0),importe:qty*pventa,tipo:'almacen'});
+      // Descontar stock
+      a.stock=parseFloat(a.stock||0)-qty;
+      if(gsConnected) await gsUpdate(SHEETS.CATALOGO,'ref',a.ref,[a.ref,a.desc,a.cat,a.uni,a.coste,a.margen,a.stock,a.min,a.max||100,a.proveedor||'']);
+    }
+  }
+  if(lineas.length===0){toast('Selecciona al menos un artículo con cantidad','error');return;}
+
+  // Crear albarán automático
+  const albNum='ALB-'+proy+'-'+Date.now().toString().slice(-4);
+  const total=lineas.reduce((s,l)=>s+l.importe,0);
+  const obj={id:Date.now().toString(),num:albNum,fecha,proyecto:proy,operario:op,notas:'Imputación de almacén',total:total.toFixed(2),lineas:JSON.stringify(lineas),horas:'[]'};
+  DB.albaranes.push(obj);
+  lineas.forEach(l=>DB.albLineas.push({albId:obj.id,albNum,...l}));
+  guardarLocalCache();
+
+  if(gsConnected){
+    await gsPost('append',{hoja:SHEETS.ALBARANES,fila:[obj.id,albNum,fecha,proy,op,'Imputación de almacén',total.toFixed(2)]});
+    for(const l of lineas)
+      await gsPost('append',{hoja:SHEETS.ALB_LINEAS,fila:[obj.id,albNum,l.ref,l.desc,l.cant,l.uni,l.pventa,l.importe.toFixed(2),l.tipo]});
+  }
+
+  cerrarModal('modal-imputar');
+  renderAlmacen();
+  renderAlbaranes();
+  renderDashboard();
+  toast('Material imputado — albarán '+albNum+' generado');
+
+  if(confirm('¿Ver el albarán generado en PDF?')) verPDFAlbaran(albNum);
+}
+
+// ════════════════════════════════════════════════════════
 // ADMIN
 // ════════════════════════════════════════════════════════
 function renderAdmin(){
@@ -1593,5 +2107,6 @@ function fmt(n){return Number(n).toLocaleString('es-ES',{minimumFractionDigits:2
 </script>
 </body>
 </html>
+
 
 
