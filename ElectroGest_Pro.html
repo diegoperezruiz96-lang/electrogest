@@ -817,8 +817,8 @@ function renderProyectos(filtro='') {
       </div>
       <div class="list-item-right" style="display:flex;gap:6px;align-items:center">
         <span class="badge ${badgeCls}">${p.estado||'—'}</span>
-        <button class="btn-xs btn-ghost" onclick="editarProyecto('${p.num}')">✏️</button>
-        <button class="btn-xs btn-danger" onclick="eliminarProyecto('${p.num}')">🗑</button>
+        <button class="btn-xs btn-ghost" data-edit-num="${p.num}" onclick="editarProyecto(this.dataset.editNum)">✏️</button>
+        <button class="btn-xs btn-danger" data-del-num="${p.num}" onclick="eliminarProyecto(this.dataset.delNum)">🗑</button>
       </div>
     </div>`;
   }).join('') : '<div class="empty-state"><div class="empty-icon">📋</div><p>Sin proyectos. Crea el primero.</p></div>';
@@ -928,8 +928,8 @@ function renderClientes(filtro='') {
         <div class="list-item-sub">${c.cif||''} · ${c.tel||''} · ${c.email||''}</div>
       </div>
       <div class="list-item-right" style="display:flex;gap:6px;align-items:center">
-        <button class="btn-xs btn-ghost" onclick="editarCliente('${c.id}')">✏️</button>
-        <button class="btn-xs btn-danger" onclick="eliminarCliente('${c.id}')">🗑</button>
+        <button class="btn-xs btn-ghost" data-edit-id="${c.id}" onclick="editarCliente(this.dataset.editId)">✏️</button>
+        <button class="btn-xs btn-danger" data-del-id="${c.id}" onclick="eliminarCliente(this.dataset.delId)">🗑</button>
       </div>
     </div>`).join('') : '<div class="empty-state"><div class="empty-icon">👥</div><p>Sin clientes. Añade el primero.</p></div>';
 }
@@ -999,9 +999,10 @@ function renderPresupuestos(){
         <div class="list-item-title">${p.num} — ${p.proyecto||'Sin proyecto'}</div>
         <div class="list-item-sub">${p.cliente||''} · ${p.fecha||''}</div>
       </div>
-      <div class="list-item-right">
+      <div class="list-item-right" style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
         <div class="list-item-amount">${fmt(parseFloat(p.total||0))}</div>
-        <span class="badge ${bc}" style="margin-top:4px">${p.estado}</span>
+        <span class="badge ${bc}">${p.estado}</span>
+        <div style="display:flex;gap:4px"><button class="btn-xs btn-ghost" data-id="${p.id}" onclick="editarEstadoPresupuesto(this.dataset.id)">✏️ Estado</button><button class="btn-xs btn-danger" data-id="${p.id}" onclick="eliminarPresupuesto(this.dataset.id)">🗑</button></div>
       </div>
     </div>`;
   }).join(''):'<div class="empty-state"><div class="empty-icon">💰</div><p>Sin presupuestos aún</p></div>';
@@ -1127,9 +1128,9 @@ function renderAlbaranes(){
         <div class="list-item-title">${a.num}</div>
         <div class="list-item-sub">${a.proyecto||'—'} · ${a.fecha||''} · ${a.operario||''}</div>
       </div>
-      <div class="list-item-right">
+      <div class="list-item-right" style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
         <div class="list-item-amount">${fmt(parseFloat(a.total||0))}</div>
-        <div style="font-size:.68rem;color:var(--muted);margin-top:2px">›</div>
+        <div style="display:flex;gap:4px;margin-top:2px"><button class="btn-xs btn-ghost" data-num="${a.num}" onclick="verPDFAlbaran(this.dataset.num)">🖨️</button><button class="btn-xs btn-danger" data-id="${a.id||a.num}" data-num="${a.num}" onclick="eliminarAlbaran(this.dataset.id,this.dataset.num)">🗑</button></div>
       </div>
     </div>`).join(''):'<div class="empty-state"><div class="empty-icon">🧾</div><p>Sin albaranes aún</p></div>';
 }
@@ -1592,5 +1593,4 @@ function fmt(n){return Number(n).toLocaleString('es-ES',{minimumFractionDigits:2
 </script>
 </body>
 </html>
-
 
