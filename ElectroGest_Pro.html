@@ -936,8 +936,31 @@ function renderClientes(filtro='') {
 function filtrarClientes(v){renderClientes(v);}
 
 function abrirModalCliente(){
+  document.getElementById('cli-edit-id').value='';
   ['cli-nombre','cli-cif','cli-email','cli-tel','cli-dir','cli-notas'].forEach(id=>document.getElementById(id).value='');
   abrirModal('modal-cliente');
+}
+
+function editarCliente(id){
+  const c=DB.clientes.find(x=>x.id===id);
+  if(!c)return;
+  document.getElementById('cli-edit-id').value=id;
+  document.getElementById('cli-nombre').value=c.nombre||'';
+  document.getElementById('cli-cif').value=c.cif||'';
+  document.getElementById('cli-email').value=c.email||'';
+  document.getElementById('cli-tel').value=c.tel||'';
+  document.getElementById('cli-dir').value=c.dir||'';
+  document.getElementById('cli-notas').value=c.notas||'';
+  abrirModal('modal-cliente');
+}
+
+async function eliminarCliente(id){
+  if(!confirm('¿Eliminar este cliente?'))return;
+  DB.clientes=DB.clientes.filter(c=>c.id!==id);
+  guardarLocalCache();
+  if(gsConnected) await gsDelete(SHEETS.CLIENTES,'id',id);
+  renderClientes();
+  toast('Cliente eliminado');
 }
 
 async function guardarCliente(){
