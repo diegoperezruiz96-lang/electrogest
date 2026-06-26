@@ -836,7 +836,7 @@ function abrirModalProyecto() {
 }
 
 function editarProyecto(num){
-  const p=DB.proyectos.find(x=>x.num===num);if(!p)return;
+  const p=DB.proyectos.find(x=>String(x.num)===String(num));if(!p)return;
   if(!document.getElementById('proy-edit-num')){
     const inp=document.createElement('input');inp.type='hidden';inp.id='proy-edit-num';
     document.getElementById('proy-num').parentNode.insertBefore(inp,document.getElementById('proy-num'));
@@ -855,7 +855,7 @@ function editarProyecto(num){
 }
 async function eliminarProyecto(num){
   if(!confirm('¿Eliminar proyecto '+num+'?'))return;
-  DB.proyectos=DB.proyectos.filter(p=>p.num!==num);guardarLocalCache();
+  DB.proyectos=DB.proyectos.filter(p=>String(p.num)!==String(num));guardarLocalCache();
   if(gsConnected) await gsDelete(SHEETS.PROYECTOS,'num',num);
   renderProyectos();toast('Proyecto eliminado');
 }
@@ -884,7 +884,7 @@ async function guardarProyecto() {
 }
 
 function verProyecto(num) {
-  const p = DB.proyectos.find(x=>x.num===num);
+  const p = DB.proyectos.find(x=>String(x.num)===String(num));
   if(!p) return;
   document.getElementById('det-proy-title').textContent = p.num;
   const albs = DB.albaranes.filter(a=>a.proyecto===num);
@@ -942,7 +942,7 @@ function abrirModalCliente(){
 }
 
 function editarCliente(id){
-  const c=DB.clientes.find(x=>x.id===id);
+  const c=DB.clientes.find(x=>String(x.id)===String(id));
   if(!c)return;
   document.getElementById('cli-edit-id').value=id;
   document.getElementById('cli-nombre').value=c.nombre||'';
@@ -956,7 +956,7 @@ function editarCliente(id){
 
 async function eliminarCliente(id){
   if(!confirm('¿Eliminar este cliente?'))return;
-  DB.clientes=DB.clientes.filter(c=>c.id!==id);
+  DB.clientes=DB.clientes.filter(c=>String(c.id)!==String(id));
   guardarLocalCache();
   if(gsConnected) await gsDelete(SHEETS.CLIENTES,'id',id);
   renderClientes();
@@ -1061,7 +1061,7 @@ function renderPreLineas(){
 }
 
 function editarEstadoPresupuesto(id){
-  const p=DB.presupuestos.find(x=>x.id===id);if(!p)return;
+  const p=DB.presupuestos.find(x=>String(x.id)===String(id));if(!p)return;
   const nuevo=prompt('Estado actual: '+p.estado+'\nNuevo estado (BORRADOR/ENVIADO/ACEPTADO/RECHAZADO):',p.estado);
   if(!nuevo)return;const est=nuevo.toUpperCase();
   if(!['BORRADOR','ENVIADO','ACEPTADO','RECHAZADO'].includes(est)){toast('Estado no válido','error');return;}
@@ -1071,8 +1071,8 @@ function editarEstadoPresupuesto(id){
 }
 async function eliminarPresupuesto(id){
   if(!confirm('¿Eliminar este presupuesto?'))return;
-  DB.presupuestos=DB.presupuestos.filter(p=>p.id!==id);
-  DB.presLineas=DB.presLineas.filter(l=>l.presId!==id);
+  DB.presupuestos=DB.presupuestos.filter(p=>String(p.id)!==String(id));
+  DB.presLineas=DB.presLineas.filter(l=>String(l.presId)!==String(id));
   guardarLocalCache();if(gsConnected)await gsDelete(SHEETS.PRESUPUESTOS,'id',id);
   renderPresupuestos();toast('Presupuesto eliminado');
 }
@@ -1106,16 +1106,16 @@ async function guardarPresupuesto(){
 // ALBARANES
 // ════════════════════════════════════════════════════════
 function verPDFAlbaran(num){
-  const a=DB.albaranes.find(x=>x.num===num);if(!a)return;
+  const a=DB.albaranes.find(x=>String(x.num)===String(num));if(!a)return;
   const lineas=DB.albLineas.filter(l=>l.albNum===num);
   const horas=DB.albHoras.filter(h=>h.albNum===num);
   try{imprimirAlbaranDatos(a,lineas.length?lineas:JSON.parse(a.lineas||'[]'),horas.length?horas:JSON.parse(a.horas||'[]'));}catch(e){imprimirAlbaranDatos(a,[],[]);}
 }
 async function eliminarAlbaran(id,num){
   if(!confirm('¿Eliminar albarán '+num+'?'))return;
-  DB.albaranes=DB.albaranes.filter(a=>a.num!==num);
-  DB.albLineas=DB.albLineas.filter(l=>l.albNum!==num);
-  DB.albHoras=DB.albHoras.filter(h=>h.albNum!==num);
+  DB.albaranes=DB.albaranes.filter(a=>String(a.num)!==String(num));
+  DB.albLineas=DB.albLineas.filter(l=>String(l.albNum)!==String(num));
+  DB.albHoras=DB.albHoras.filter(h=>String(h.albNum)!==String(num));
   guardarLocalCache();if(gsConnected)await gsDelete(SHEETS.ALBARANES,'id',id);
   renderAlbaranes();renderDashboard();toast('Albarán eliminado');
 }
@@ -1593,4 +1593,5 @@ function fmt(n){return Number(n).toLocaleString('es-ES',{minimumFractionDigits:2
 </script>
 </body>
 </html>
+
 
