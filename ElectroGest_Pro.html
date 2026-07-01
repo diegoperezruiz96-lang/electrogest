@@ -1,0 +1,3139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ElectroGest Pro</title>
+<style>
+/* ── TOKENS ─────────────────────────────────────────── */
+:root {
+  --negro:   #0D0D0D;
+  --carbon:  #1A1A2E;
+  --panel:   #16213E;
+  --card:    #0F3460;
+  --acento:  #F5A623;
+  --acento2: #E8480A;
+  --text:    #E8EAF0;
+  --muted:   #8892A4;
+  --borde:   rgba(255,255,255,0.08);
+  --verde:   #27AE60;
+  --rojo:    #E74C3C;
+  --azul:    #3498DB;
+  --r:       10px;
+  --sombra:  0 4px 24px rgba(0,0,0,0.4);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--carbon);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* ── LOGIN ──────────────────────────────────────────── */
+#login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:linear-gradient(135deg,#0D0D0D 0%,#1A1A2E 50%,#0F3460 100%)}
+.login-logo{font-size:3rem;margin-bottom:8px}
+.login-title{font-size:1.6rem;font-weight:800;color:var(--acento);letter-spacing:1px;margin-bottom:4px}
+.login-sub{font-size:.8rem;color:var(--muted);margin-bottom:32px;letter-spacing:2px;text-transform:uppercase}
+.login-card{background:rgba(255,255,255,0.05);border:1px solid var(--borde);border-radius:16px;padding:28px;width:100%;max-width:380px;backdrop-filter:blur(10px)}
+.login-card label{display:block;font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;margin-top:16px}
+.login-card label:first-child{margin-top:0}
+.login-card input{width:100%;padding:13px 16px;background:rgba(255,255,255,0.06);border:1.5px solid var(--borde);border-radius:8px;color:var(--text);font-size:1rem}
+.login-card input:focus{outline:none;border-color:var(--acento);background:rgba(245,166,35,0.07)}
+.btn-login{width:100%;padding:15px;margin-top:24px;background:linear-gradient(135deg,var(--acento),var(--acento2));border:none;border-radius:10px;color:#000;font-size:1rem;font-weight:800;cursor:pointer;letter-spacing:.5px}
+.login-error{color:var(--rojo);font-size:.82rem;margin-top:10px;text-align:center;display:none}
+
+/* ── APP SHELL ──────────────────────────────────────── */
+#app{display:none;min-height:100vh;flex-direction:column}
+.topbar{background:var(--panel);border-bottom:1px solid var(--borde);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.topbar-logo{font-size:1.3rem}
+.topbar-title{font-size:.95rem;font-weight:800;color:var(--acento)}
+.topbar-sub{font-size:.7rem;color:var(--muted)}
+.topbar-user{display:flex;align-items:center;gap:8px}
+.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--acento),var(--acento2));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:#000}
+.btn-logout{background:none;border:1px solid var(--borde);border-radius:6px;color:var(--muted);font-size:.7rem;padding:5px 9px;cursor:pointer}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--panel);border-top:1px solid var(--borde);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;cursor:pointer;border:none;background:none;color:var(--muted);font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;transition:color .2s}
+.nav-item.active{color:var(--acento)}
+.nav-icon{font-size:1.3rem;margin-bottom:3px;display:block}
+.nav-item.active .nav-icon{filter:drop-shadow(0 0 6px var(--acento))}
+
+/* PAGES */
+.page{display:none;padding:16px;padding-bottom:90px;min-height:calc(100vh - 58px)}
+.page.active{display:block}
+
+/* ── UI COMPONENTS ──────────────────────────────────── */
+.card{background:var(--panel);border:1px solid var(--borde);border-radius:var(--r);padding:16px;margin-bottom:14px}
+.card-title{font-size:.72rem;font-weight:700;color:var(--acento);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+
+label{display:block;font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;margin-top:12px}
+label:first-child{margin-top:0}
+input,select,textarea{width:100%;padding:11px 13px;background:rgba(255,255,255,0.05);border:1.5px solid var(--borde);border-radius:8px;color:var(--text);font-size:.9rem;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acento);background:rgba(245,166,35,0.06)}
+select option{background:var(--panel);color:var(--text)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+
+.btn{display:block;width:100%;padding:13px;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;margin-top:10px;letter-spacing:.3px;transition:opacity .2s}
+.btn:active{opacity:.75}
+.btn-primary{background:linear-gradient(135deg,var(--acento),var(--acento2));color:#000}
+.btn-success{background:var(--verde);color:#fff}
+.btn-ghost{background:rgba(255,255,255,0.07);border:1px solid var(--borde);color:var(--text)}
+.btn-danger{background:var(--rojo);color:#fff}
+.btn-sm{padding:7px 12px;font-size:.75rem;width:auto;display:inline-block;margin-top:0;border-radius:7px}
+.btn-xs{padding:5px 9px;font-size:.7rem;width:auto;display:inline-block;margin-top:0;border-radius:6px}
+
+/* BADGES */
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:.68rem;font-weight:700}
+.badge-verde{background:rgba(39,174,96,.2);color:#2ecc71;border:1px solid rgba(39,174,96,.3)}
+.badge-rojo{background:rgba(231,76,60,.2);color:#e74c3c;border:1px solid rgba(231,76,60,.3)}
+.badge-naranja{background:rgba(245,166,35,.2);color:var(--acento);border:1px solid rgba(245,166,35,.3)}
+.badge-azul{background:rgba(52,152,219,.2);color:#3498db;border:1px solid rgba(52,152,219,.3)}
+.badge-gris{background:rgba(255,255,255,.1);color:var(--muted);border:1px solid var(--borde)}
+
+/* LISTAS */
+.list-item{display:flex;align-items:center;justify-content:space-between;padding:13px 14px;background:rgba(255,255,255,0.04);border:1px solid var(--borde);border-radius:9px;margin-bottom:8px;cursor:pointer;transition:background .15s}
+.list-item:active{background:rgba(245,166,35,0.08)}
+.list-item-left{flex:1;min-width:0}
+.list-item-title{font-size:.88rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.list-item-sub{font-size:.74rem;color:var(--muted);margin-top:2px}
+.list-item-right{text-align:right;flex-shrink:0;padding-left:10px}
+.list-item-amount{font-size:.95rem;font-weight:700;color:var(--acento)}
+.list-item-arrow{color:var(--muted);font-size:1rem}
+
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.kpi{background:var(--panel);border:1px solid var(--borde);border-radius:var(--r);padding:14px 12px}
+.kpi-val{font-size:1.5rem;font-weight:800;color:var(--acento);line-height:1}
+.kpi-label{font-size:.68rem;color:var(--muted);margin-top:4px;font-weight:600;text-transform:uppercase;letter-spacing:.8px}
+.kpi.span2{grid-column:1/-1}
+.kpi.verde .kpi-val{color:var(--verde)}
+.kpi.rojo  .kpi-val{color:var(--rojo)}
+
+/* SYNC BAR */
+.sync-bar{display:flex;align-items:center;gap:8px;padding:9px 14px;background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.25);border-radius:8px;margin-bottom:14px;font-size:.78rem;color:#2ecc71}
+.sync-bar.error{background:rgba(231,76,60,.1);border-color:rgba(231,76,60,.25);color:var(--rojo)}
+.sync-bar.warning{background:rgba(245,166,35,.1);border-color:rgba(245,166,35,.25);color:var(--acento)}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0}
+
+/* TABLA */
+.tabla{width:100%;border-collapse:collapse;font-size:.78rem}
+.tabla th{padding:8px 8px;text-align:left;border-bottom:1px solid var(--borde);color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;font-size:.68rem}
+.tabla td{padding:9px 8px;border-bottom:1px solid rgba(255,255,255,0.04)}
+.tabla tr:last-child td{border-bottom:none}
+.tabla .total-row td{font-weight:700;color:var(--acento);border-top:1px solid var(--borde)}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:flex-end}
+.modal-overlay.open{display:flex}
+.modal-box{background:var(--panel);width:100%;max-height:85vh;border-radius:20px 20px 0 0;overflow:hidden;display:flex;flex-direction:column}
+.modal-head{padding:16px;border-bottom:1px solid var(--borde);display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.modal-head h3{font-size:1rem;font-weight:700}
+.modal-body{overflow-y:auto;padding:16px;flex:1}
+.modal-close{background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer;padding:4px}
+
+/* SEPARADOR */
+.sep{font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin:18px 0 10px;display:flex;align-items:center;gap:8px}
+.sep::after{content:'';flex:1;height:1px;background:var(--borde)}
+
+/* CHECKBOX LINEAS */
+.linea-check{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,.04);border:1px solid var(--borde);border-radius:8px;margin-bottom:6px;cursor:pointer}
+.linea-check input[type=checkbox]{width:18px;height:18px;accent-color:var(--acento);flex-shrink:0}
+.linea-info{flex:1}
+.linea-info-title{font-size:.83rem;font-weight:600}
+.linea-info-sub{font-size:.72rem;color:var(--muted);margin-top:2px}
+
+/* ADMIN BADGE */
+.role-badge{font-size:.62rem;padding:2px 7px;border-radius:10px;font-weight:700;text-transform:uppercase}
+.role-admin{background:rgba(245,166,35,.2);color:var(--acento)}
+.role-op{background:rgba(52,152,219,.2);color:var(--azul)}
+
+/* SETUP STEPS */
+.step-item{display:flex;gap:12px;margin-bottom:18px}
+.step-num{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--acento),var(--acento2));color:#000;font-weight:800;font-size:.8rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-content{flex:1}
+.step-title{font-size:.88rem;font-weight:700;margin-bottom:4px}
+.step-desc{font-size:.78rem;color:var(--muted);line-height:1.5}
+.code-box{background:rgba(0,0,0,.4);border:1px solid var(--borde);border-radius:6px;padding:10px 12px;font-family:monospace;font-size:.78rem;color:#f8c471;margin-top:6px;word-break:break-all;position:relative}
+.copy-btn{position:absolute;top:6px;right:6px;background:rgba(255,255,255,.1);border:none;border-radius:4px;color:var(--text);font-size:.65rem;padding:3px 8px;cursor:pointer}
+
+/* SEARCH */
+.search-wrap{position:relative;margin-bottom:12px}
+.search-wrap input{padding-left:38px}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:1rem}
+
+/* VACÍO */
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty-state .empty-icon{font-size:2.5rem;margin-bottom:10px}
+.empty-state p{font-size:.85rem}
+
+/* TOAST */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--verde);color:#fff;padding:11px 22px;border-radius:25px;font-size:.85rem;font-weight:700;z-index:300;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+.toast.error{background:var(--rojo)}
+
+/* GOOGLE SHEET STATUS */
+.gs-config{padding:12px;background:rgba(0,0,0,.3);border-radius:8px;font-size:.78rem;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<!-- ═══════ LOGIN ═══════ -->
+<div id="login-screen">
+  <div class="login-logo">⚡</div>
+  <div class="login-title">ElectroGest Pro</div>
+  <div class="login-sub">Gestión de instalaciones</div>
+  <div class="login-card">
+    <label>Usuario</label>
+    <input type="text" id="lg-user" placeholder="tu@email.com" autocomplete="username">
+    <label>Contraseña</label>
+    <input type="password" id="lg-pass" placeholder="••••••••" autocomplete="current-password">
+    <button class="btn-login" onclick="doLogin()">Entrar</button>
+    <div class="login-error" id="login-error">Usuario o contraseña incorrectos</div>
+  </div>
+</div>
+
+<!-- ═══════ APP ═══════ -->
+<div id="app" style="display:none;flex-direction:column">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-logo">⚡</span>
+      <div>
+        <div class="topbar-title">ElectroGest Pro</div>
+        <div class="topbar-sub" id="topbar-sub">Cargando...</div>
+      </div>
+    </div>
+    <div class="topbar-user">
+      <div class="avatar" id="avatar-initials">?</div>
+      <button class="btn-logout" onclick="doLogout()">Salir</button>
+    </div>
+  </div>
+
+  <!-- PAGES -->
+
+  <!-- ── DASHBOARD ── -->
+  <div class="page active" id="page-dashboard">
+    <div id="sync-status" class="sync-bar warning">
+      <span class="sync-dot"></span>
+      <span id="sync-text">Configurando conexión...</span>
+    </div>
+    <div class="kpi-grid" id="kpi-grid">
+      <div class="kpi"><div class="kpi-val" id="kpi-proyectos">—</div><div class="kpi-label">Proyectos activos</div></div>
+      <div class="kpi verde"><div class="kpi-val" id="kpi-presupuestos">—</div><div class="kpi-label">Presupuestos</div></div>
+      <div class="kpi"><div class="kpi-val" id="kpi-albaranes">—</div><div class="kpi-label">Albaranes emitidos</div></div>
+      <div class="kpi verde"><div class="kpi-val" id="kpi-facturado">—</div><div class="kpi-label">Facturado mes</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🕐 Últimos Albaranes</div>
+      <div id="dash-albaranes"><div class="empty-state"><div class="empty-icon">📋</div><p>Sin albaranes aún</p></div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">⚠️ Stock Bajo</div>
+      <div id="dash-stock"><div class="empty-state"><div class="empty-icon">📦</div><p>Stock OK</p></div></div>
+    </div>
+  </div>
+
+  <!-- ── PROYECTOS ── -->
+  <div class="page" id="page-proyectos">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Buscar proyecto..." oninput="filtrarProyectos(this.value)">
+    </div>
+    <button class="btn btn-primary" onclick="abrirModalProyecto()" style="margin-bottom:14px">+ Nuevo Proyecto</button>
+    <div id="lista-proyectos"></div>
+  </div>
+
+  <!-- ── ALBARANES ── -->
+  <div class="page" id="page-albaranes">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Buscar nº albarán..." oninput="filtrarAlbaranesTexto(this.value)">
+    </div>
+    <div class="card" style="padding:12px;margin-bottom:14px">
+      <div class="row3">
+        <div><label style="margin-top:0">Proyecto</label><select id="falb-proyecto" onchange="aplicarFiltrosAlbaranes()"><option value="">Todos</option></select></div>
+        <div><label style="margin-top:0">Cliente</label><select id="falb-cliente" onchange="aplicarFiltrosAlbaranes()"><option value="">Todos</option></select></div>
+        <div><label style="margin-top:0">Año</label><select id="falb-anio" onchange="aplicarFiltrosAlbaranes()"><option value="">Todos</option></select></div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="limpiarFiltrosAlbaranes()" style="margin-top:8px">✕ Limpiar filtros</button>
+    </div>
+    <div id="lista-albaranes-page"></div>
+  </div>
+
+  <!-- ── MÁS ── -->
+  <div class="page" id="page-clientes-wrap">
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button class="btn btn-ghost" onclick="showMasTab('clientes')" id="mas-tab-clientes" style="flex:1;margin-top:0;border-bottom:2px solid var(--acento)">👥 Clientes</button>
+      <button class="btn btn-ghost" onclick="showMasTab('presupuestos')" id="mas-tab-presupuestos" style="flex:1;margin-top:0">💰 Presupuestos</button>
+    </div>
+    <div id="mas-clientes">
+      <div class="search-wrap"><span class="search-icon">🔍</span><input type="text" placeholder="Buscar cliente..." oninput="filtrarClientes(this.value)"></div>
+      <button class="btn btn-primary" onclick="abrirModalCliente()" style="margin-bottom:14px">+ Nuevo Cliente</button>
+      <div id="lista-clientes"></div>
+    </div>
+    <div id="mas-presupuestos" style="display:none">
+      <button class="btn btn-primary" onclick="abrirModalPresupuesto()" style="margin-bottom:14px">+ Nuevo Presupuesto</button>
+      <div id="lista-presupuestos"></div>
+    </div>
+  </div>
+
+  <!-- ── ADMIN ── -->
+  <div class="page" id="page-admin">
+    <div id="page-admin-content"></div>
+  </div>
+
+  <!-- ── ALMACÉN ── -->
+  <div class="page" id="page-almacen">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Buscar artículo..." oninput="filtrarAlmacen(this.value)">
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button class="btn btn-primary" onclick="abrirModalArticulo()" style="flex:1;margin-top:0">+ Nuevo Artículo</button>
+      <button class="btn btn-ghost" onclick="irPagina('compras',document.querySelector('.nav-item:nth-child(6)'));setTimeout(()=>abrirModalCompra(),100)" style="flex:1;margin-top:0">📥 Compra</button>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:12px">
+      <button class="btn-xs btn-ghost" onclick="filtroStock('todos')" id="fstock-todos" style="border-radius:20px;padding:5px 14px;font-size:.72rem;border:1px solid var(--borde);background:var(--acento);color:#000">Todos</button>
+      <button class="btn-xs btn-ghost" onclick="filtroStock('bajo')" id="fstock-bajo" style="border-radius:20px;padding:5px 14px;font-size:.72rem;border:1px solid var(--borde)">Stock bajo</button>
+      <button class="btn-xs btn-ghost" onclick="filtroStock('ok')" id="fstock-ok" style="border-radius:20px;padding:5px 14px;font-size:.72rem;border:1px solid var(--borde)">En stock</button>
+    </div>
+    <div id="lista-almacen"></div>
+  </div>
+
+  <!-- ── COMPRAS ── -->
+  <div class="page" id="page-compras">
+    <button class="btn btn-primary" onclick="abrirModalCompra()" style="margin-bottom:14px">+ Albarán de Compra</button>
+    <div id="lista-compras"></div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="irPagina('dashboard',this)">
+      <span class="nav-icon">🏠</span>Inicio
+    </button>
+    <button class="nav-item" onclick="irPagina('proyectos',this)">
+      <span class="nav-icon">📋</span>Proyectos
+    </button>
+    <button class="nav-item" onclick="irPagina('albaranes',this)">
+      <span class="nav-icon">🧾</span>Albaranes
+    </button>
+    <button class="nav-item" onclick="irPagina('almacen',this)">
+      <span class="nav-icon">📦</span>Almacén
+    </button>
+    <button class="nav-item" onclick="irPagina('compras',this)">
+      <span class="nav-icon">🛒</span>Compras
+    </button>
+    <button class="nav-item" onclick="irPagina('clientes-wrap',this)">
+      <span class="nav-icon">👥</span>Más
+    </button>
+    <button class="nav-item" id="nav-admin" style="display:none" onclick="irPagina('admin',this)">
+      <span class="nav-icon">⚙️</span>Admin
+    </button>
+  </nav>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MODALES
+══════════════════════════════════════════════════════════ -->
+
+<!-- MODAL PROYECTO -->
+<div class="modal-overlay" id="modal-proyecto">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>📋 Proyecto</h3>
+      <button class="modal-close" onclick="cerrarModal('modal-proyecto')">✕</button>
+    </div>
+    <div class="modal-body">
+      <label>Nº Proyecto</label>
+      <input type="text" id="proy-num" placeholder="2024-005">
+      <label>Cliente</label>
+      <select id="proy-cliente"><option value="">— Selecciona cliente —</option></select>
+      <label>Descripción de la obra</label>
+      <input type="text" id="proy-desc" placeholder="Instalación eléctrica vivienda">
+      <div class="row2">
+        <div><label>Fecha inicio</label><input type="date" id="proy-fi"></div>
+        <div><label>Fecha fin prev.</label><input type="date" id="proy-ff"></div>
+      </div>
+      <label>Estado</label>
+      <select id="proy-estado">
+        <option>PENDIENTE</option><option>EN CURSO</option><option>CERRADO</option><option>CANCELADO</option>
+      </select>
+      <label>Notas</label>
+      <textarea id="proy-notas" rows="2" placeholder="Observaciones..."></textarea>
+      <button class="btn btn-success" onclick="guardarProyecto()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CLIENTE -->
+<div class="modal-overlay" id="modal-cliente">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>👥 Cliente</h3>
+      <button class="modal-close" onclick="cerrarModal('modal-cliente')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="cli-edit-id">
+      <label>Nombre / Razón Social</label>
+      <input type="text" id="cli-nombre" placeholder="García Reformas S.L.">
+      <label>CIF / DNI</label>
+      <input type="text" id="cli-cif" placeholder="B12345678">
+      <label>Email</label>
+      <input type="email" id="cli-email" placeholder="contacto@empresa.com">
+      <label>Teléfono</label>
+      <input type="tel" id="cli-tel" placeholder="612 345 678">
+      <label>Dirección</label>
+      <input type="text" id="cli-dir" placeholder="C/ Mayor 10, Madrid">
+      <label>Notas</label>
+      <textarea id="cli-notas" rows="2" placeholder="Condiciones de pago, contacto..."></textarea>
+      <button class="btn btn-success" onclick="guardarCliente()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PRESUPUESTO -->
+<div class="modal-overlay" id="modal-presupuesto">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>💰 Presupuesto</h3>
+      <button class="modal-close" onclick="cerrarModal('modal-presupuesto')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="row2">
+        <div><label>Nº Presupuesto</label><input type="text" id="pre-num" placeholder="PRES-2024-001"></div>
+        <div><label>Proyecto</label><select id="pre-proyecto"><option value="">— Proyecto —</option></select></div>
+      </div>
+      <label>Cliente</label>
+      <select id="pre-cliente"><option value="">— Cliente —</option></select>
+      <label>Fecha</label>
+      <input type="date" id="pre-fecha">
+      <div class="sep">Líneas de presupuesto</div>
+      <div id="pre-lineas-lista"></div>
+      <div style="background:rgba(0,0,0,.3);border-radius:8px;padding:12px;margin-top:8px">
+        <label>Buscar artículo del catálogo</label>
+        <input type="text" id="pre-buscar-art" placeholder="Escribe para buscar..." oninput="buscarArtPresupuesto(this.value)" autocomplete="off">
+        <div id="pre-resultados-art" style="max-height:180px;overflow-y:auto;margin-top:6px"></div>
+        <div id="pre-art-elegido" style="display:none;margin-top:10px;padding:10px;background:rgba(245,166,35,.1);border-radius:8px;border:1px solid rgba(245,166,35,.25)">
+          <div style="font-size:.82rem;font-weight:700" id="pre-art-elegido-nombre"></div>
+          <input type="hidden" id="pre-art-ref">
+          <input type="hidden" id="pre-uni">
+          <div class="row2" style="margin-top:8px">
+            <div><label style="margin-top:0">Cantidad</label><input type="number" id="pre-cant" placeholder="0" step="0.5"></div>
+            <div><label style="margin-top:0">€ Venta/ud</label><input type="number" id="pre-pventa" step="0.01" placeholder="0.00"></div>
+          </div>
+          <input type="text" id="pre-linea-desc" placeholder="Descripción línea..." style="margin-top:8px">
+          <button class="btn btn-ghost btn-sm" onclick="addLineaPresupuesto()" style="margin-top:8px;width:100%">+ Añadir línea</button>
+        </div>
+      </div>
+      <div style="margin-top:12px;padding:12px;background:rgba(245,166,35,.08);border-radius:8px;border:1px solid rgba(245,166,35,.2)">
+        <div style="display:flex;justify-content:space-between;font-size:.85rem"><span style="color:var(--muted)">Total presupuesto:</span><span style="font-weight:800;color:var(--acento)" id="pre-total-display">0,00 €</span></div>
+      </div>
+      <label>Estado</label>
+      <select id="pre-estado"><option>BORRADOR</option><option>ENVIADO</option><option>ACEPTADO</option><option>RECHAZADO</option></select>
+      <label>Notas</label>
+      <textarea id="pre-notas" rows="2"></textarea>
+      <button class="btn btn-success" onclick="guardarPresupuesto()">💾 Guardar presupuesto</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ALBARÁN -->
+<div class="modal-overlay" id="modal-albaran">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>🧾 Albarán</h3>
+      <button class="modal-close" onclick="cerrarModal('modal-albaran')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="row2">
+        <div><label>Nº Albarán</label><input type="text" id="alb-num" placeholder="ALB-2024-001"></div>
+        <div><label>Fecha</label><input type="date" id="alb-fecha"></div>
+      </div>
+      <label>Proyecto</label>
+      <select id="alb-proyecto-sel" onchange="onProyectoAlbaranChange()"><option value="">— Selecciona proyecto —</option></select>
+      <label>Operario</label>
+      <input type="text" id="alb-operario" placeholder="Nombre operario">
+
+      <div class="sep">Seleccionar líneas del presupuesto</div>
+      <div id="alb-lineas-pres" style="margin-bottom:10px"></div>
+
+      <div class="sep">Añadir material adicional</div>
+      <div style="background:rgba(0,0,0,.3);border-radius:8px;padding:12px">
+        <select id="alb-art-sel" onchange="albAutoFill()"><option value="">— Catálogo —</option></select>
+        <input type="text" id="alb-desc-extra" placeholder="Descripción" style="margin-top:8px">
+        <div class="row3" style="margin-top:8px">
+          <div><label>Cant.</label><input type="number" id="alb-cant" placeholder="0" step="0.5"></div>
+          <div><label>€/ud</label><input type="number" id="alb-pventa" step="0.01" placeholder="0.00"></div>
+          <div><label>Ud.</label><input type="text" id="alb-uni" placeholder="m"></div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="addLineaAlbaran()" style="margin-top:8px;width:100%">+ Agregar</button>
+      </div>
+
+      <div class="sep">Horas de trabajo</div>
+      <div id="alb-horas-lista" style="margin-bottom:6px"></div>
+      <div style="background:rgba(0,0,0,.3);border-radius:8px;padding:12px">
+        <div class="row2">
+          <div><label>H. Inicio</label><input type="time" id="alb-hora-ini" onchange="calcAlbHoras()"></div>
+          <div><label>H. Fin</label><input type="time" id="alb-hora-fin" onchange="calcAlbHoras()"></div>
+        </div>
+        <div class="row3" style="margin-top:4px">
+          <div><label>Horas</label><input type="number" id="alb-horas-tot" step="0.5" placeholder="0"></div>
+          <div><label>€/hora</label><input type="number" id="alb-hora-precio" placeholder="35" step="0.5"></div>
+          <div><label>Operario</label><input type="text" id="alb-hora-op" placeholder="Nombre"></div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="addHoraAlbaran()" style="margin-top:8px;width:100%">+ Añadir horas</button>
+      </div>
+
+      <div style="margin-top:14px;padding:14px;background:rgba(245,166,35,.08);border-radius:8px;border:1px solid rgba(245,166,35,.2)">
+        <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:4px"><span style="color:var(--muted)">Material:</span><span id="alb-tot-mat">0,00 €</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:8px"><span style="color:var(--muted)">M. Obra:</span><span id="alb-tot-mo">0,00 €</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:1rem;font-weight:800"><span>TOTAL:</span><span style="color:var(--acento)" id="alb-tot-total">0,00 €</span></div>
+      </div>
+
+      <label>Notas</label>
+      <textarea id="alb-notas" rows="2"></textarea>
+      <button class="btn btn-success" onclick="guardarAlbaran()">💾 Guardar Albarán</button>
+      <button class="btn btn-ghost" onclick="imprimirAlbaran()" style="margin-top:8px">🖨️ Vista previa PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALLE PROYECTO -->
+<div class="modal-overlay" id="modal-det-proy">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="det-proy-title">Proyecto</h3>
+      <button class="modal-close" onclick="cerrarModal('modal-det-proy')">✕</button>
+    </div>
+    <div class="modal-body" id="det-proy-body"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<!-- MODAL ARTÍCULO ALMACÉN -->
+<div class="modal-overlay" id="modal-articulo">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="modal-art-title">📦 Nuevo Artículo</h3>
+      <button class="modal-close" onclick="cerrarModal('modal-articulo')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="art-edit-ref">
+      <div class="row2">
+        <div><label>Referencia</label><input type="text" id="art-ref" placeholder="CAB-006"></div>
+        <div><label>Unidad</label><input type="text" id="art-uni" placeholder="m / ud / bol"></div>
+      </div>
+      <label>Descripción</label>
+      <input type="text" id="art-desc" placeholder="Cable 4mm² negro">
+      <label>Categoría</label>
+      <select id="art-cat"></select>
+      <div class="row3">
+        <div><label>€ Coste/ud</label><input type="number" id="art-coste" step="0.01" placeholder="0.00" oninput="calcPVenta()"></div>
+        <div><label>% Margen</label><input type="number" id="art-margen" placeholder="30" oninput="calcPVenta()"></div>
+        <div><label>€ Venta/ud</label><input type="number" id="art-pventa" step="0.01" placeholder="auto" style="background:rgba(39,174,96,.08)"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:12px;padding:10px;background:rgba(255,255,255,.04);border-radius:8px;border:1px solid var(--borde)">
+        <input type="checkbox" id="art-sin-stock" style="width:18px;height:18px;accent-color:var(--acento);flex-shrink:0" onchange="toggleArtStock()">
+        <div>
+          <div style="font-size:.82rem;font-weight:600">No controlar stock</div>
+          <div style="font-size:.72rem;color:var(--muted)">Para consumibles de uso libre, materiales propios, etc.</div>
+        </div>
+      </div>
+      <div id="art-stock-campos">
+        <div class="row3">
+          <div><label>Stock actual</label><input type="number" id="art-stock" placeholder="0"></div>
+          <div><label>Stock mínimo</label><input type="number" id="art-min" placeholder="5"></div>
+          <div><label>Stock máximo</label><input type="number" id="art-max" placeholder="100"></div>
+        </div>
+      </div>
+      <label>Proveedor</label>
+      <input type="text" id="art-proveedor" placeholder="Proveedor habitual">
+      <button class="btn btn-success" onclick="guardarArticulo()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ALBARÁN DE COMPRA -->
+<div class="modal-overlay" id="modal-compra">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>🛒 Albarán de Compra</h3>
+      <button class="modal-close" onclick="cerrarModal('modal-compra')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="row2">
+        <input type="hidden" id="com-edit-id">
+        <div><label>Nº Albarán Compra</label><input type="text" id="com-num" placeholder="AC-2024-001"></div>
+        <div><label>Fecha</label><input type="date" id="com-fecha"></div>
+      </div>
+      <label>Proveedor</label>
+      <input type="text" id="com-proveedor" placeholder="Nombre del proveedor">
+      <div class="sep">Líneas de compra</div>
+      <div id="com-lineas-lista"></div>
+      <div style="background:rgba(0,0,0,.3);border-radius:8px;padding:12px;margin-top:8px">
+        <label>Buscar artículo del catálogo</label>
+        <input type="text" id="com-buscar-art" placeholder="Escribe para buscar..." oninput="buscarArtCompra(this.value)" autocomplete="off">
+        <div id="com-resultados-art" style="max-height:180px;overflow-y:auto;margin-top:6px"></div>
+        <input type="hidden" id="com-art-ref">
+        <input type="hidden" id="com-uni">
+        <div id="com-art-elegido" style="display:none;margin-top:10px;padding:10px;background:rgba(245,166,35,.1);border-radius:8px;border:1px solid rgba(245,166,35,.25)">
+          <div style="font-size:.82rem;font-weight:700" id="com-art-elegido-nombre"></div>
+          <div class="row2" style="margin-top:8px">
+            <div><label style="margin-top:0">Cantidad</label><input type="number" id="com-cant" step="0.5" placeholder="0"></div>
+            <div><label style="margin-top:0">€ Coste/ud</label><input type="number" id="com-coste" step="0.01" placeholder="0.00"></div>
+          </div>
+          <input type="text" id="com-desc" placeholder="Descripción" style="margin-top:8px">
+          <button class="btn btn-ghost btn-sm" onclick="addLineaCompra()" style="margin-top:8px;width:100%">+ Añadir línea</button>
+        </div>
+      </div>
+      <div style="margin-top:12px;padding:12px;background:rgba(245,166,35,.08);border-radius:8px;border:1px solid rgba(245,166,35,.2)">
+        <div style="display:flex;justify-content:space-between;font-weight:700"><span>Total compra:</span><span style="color:var(--acento)" id="com-total-display">0,00 €</span></div>
+      </div>
+      <label>Notas</label>
+      <textarea id="com-notas" rows="2"></textarea>
+      <button class="btn btn-success" onclick="guardarCompra()">💾 Registrar Compra</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL IMPUTAR MATERIAL A PROYECTO -->
+<div class="modal-overlay" id="modal-imputar">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="imp-title">📤 Imputar Material</h3>
+      <button class="modal-close" onclick="cerrarModal('modal-imputar')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="imp-proyecto">
+      <label>Proyecto</label>
+      <input type="text" id="imp-proyecto-disp" readonly style="background:rgba(245,166,35,.08)">
+      <div class="row2">
+        <div><label>Fecha</label><input type="date" id="imp-fecha"></div>
+        <div><label>Operario</label><input type="text" id="imp-operario"></div>
+      </div>
+      <div class="sep">Buscar material del almacén</div>
+      <input type="text" id="imp-buscar-art" placeholder="Escribe para buscar..." oninput="buscarArtImputar(this.value)" autocomplete="off">
+      <div id="imp-resultados-art" style="max-height:220px;overflow-y:auto;margin-top:6px"></div>
+      <div class="sep">Material seleccionado</div>
+      <div id="imp-seleccionados"></div>
+      <div style="margin-top:12px;padding:12px;background:rgba(245,166,35,.08);border-radius:8px;border:1px solid rgba(245,166,35,.2)">
+        <div style="display:flex;justify-content:space-between;font-weight:700"><span>Total a imputar:</span><span style="color:var(--acento)" id="imp-total">0,00 €</span></div>
+      </div>
+      <button class="btn btn-success" onclick="confirmarImputacion()">✅ Imputar al proyecto</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL REGISTRAR TIEMPO -->
+<div class="modal-overlay" id="modal-tiempo">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>⏱️ Registrar Tiempo</h3>
+      <button class="modal-close" onclick="cerrarModal('modal-tiempo')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="tim-proyecto">
+      <label>Proyecto</label>
+      <input type="text" id="tim-proyecto-disp" readonly style="background:rgba(245,166,35,.08)">
+      <div class="row2">
+        <div><label>Fecha</label><input type="date" id="tim-fecha"></div>
+        <div><label>Operario</label><input type="text" id="tim-operario" placeholder="Nombre"></div>
+      </div>
+      <label>Tipo de trabajo</label>
+      <select id="tim-tipo">
+        <option>Canalización</option>
+        <option>Tendido de cables</option>
+        <option>Conexionado</option>
+        <option>Cuadro eléctrico</option>
+        <option>Pruebas y verificación</option>
+        <option>Desplazamiento</option>
+        <option>Otros</option>
+      </select>
+      <div class="row2">
+        <div><label>H. Inicio</label><input type="time" id="tim-ini" onchange="calcTimHoras()"></div>
+        <div><label>H. Fin</label><input type="time" id="tim-fin" onchange="calcTimHoras()"></div>
+      </div>
+      <div class="row2">
+        <div><label>Horas totales</label><input type="number" id="tim-horas" step="0.5" placeholder="0.0"></div>
+        <div><label>€/hora</label><input type="number" id="tim-precio" placeholder="35" step="0.5"></div>
+      </div>
+      <label>Notas</label>
+      <textarea id="tim-notas" rows="2" placeholder="Observaciones..."></textarea>
+      <div style="padding:12px;background:rgba(245,166,35,.08);border-radius:8px;border:1px solid rgba(245,166,35,.2);margin-top:8px">
+        <div style="display:flex;justify-content:space-between;font-weight:700">
+          <span>Importe:</span><span style="color:var(--acento)" id="tim-importe-display">0,00 €</span>
+        </div>
+      </div>
+      <button class="btn btn-success" onclick="guardarTiempo()">💾 Guardar tiempo</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GENERAR ALBARÁN DESDE IMPUTACIONES -->
+<div class="modal-overlay" id="modal-alb-imp">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>🧾 Generar Albarán</h3>
+      <button class="modal-close" onclick="cerrarModal('modal-alb-imp')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="albmp-proyecto">
+      <div class="row2">
+        <div><label>Nº Albarán</label><input type="text" id="albmp-num" placeholder="ALB-2024-001"></div>
+        <div><label>Fecha</label><input type="date" id="albmp-fecha"></div>
+      </div>
+      <label>Operario</label>
+      <input type="text" id="albmp-operario">
+      <div class="sep">Selecciona material imputado</div>
+      <div id="albmp-material-lista"></div>
+      <div class="sep">Selecciona tiempos</div>
+      <div id="albmp-tiempos-lista"></div>
+      <div style="padding:12px;background:rgba(245,166,35,.08);border-radius:8px;border:1px solid rgba(245,166,35,.2);margin-top:10px">
+        <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:4px"><span style="color:var(--muted)">Material:</span><span id="albmp-tot-mat">0,00 €</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:8px"><span style="color:var(--muted)">Mano de obra:</span><span id="albmp-tot-mo">0,00 €</span></div>
+        <div style="display:flex;justify-content:space-between;font-weight:800"><span>TOTAL:</span><span style="color:var(--acento)" id="albmp-tot-total">0,00 €</span></div>
+      </div>
+      <label>Notas</label>
+      <textarea id="albmp-notas" rows="2"></textarea>
+      <button class="btn btn-success" onclick="confirmarAlbaranDesdeImp()">✅ Generar Albarán</button>
+      <button class="btn btn-ghost" onclick="previewAlbaranDesdeImp()" style="margin-top:8px">🖨️ Vista previa PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CREACIÓN RÁPIDA DE ARTÍCULO -->
+<div class="modal-overlay" id="modal-art-rapido">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>⚡ Crear Artículo Rápido</h3>
+      <button class="modal-close" onclick="cerrarModalArtRapido()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px">El artículo se añadirá al catálogo y se seleccionará automáticamente.</p>
+      <input type="hidden" id="art-rapido-contexto">
+      <div class="row2">
+        <div><label>Referencia</label><input type="text" id="art-rap-ref" placeholder="CAB-010"></div>
+        <div><label>Unidad</label><input type="text" id="art-rap-uni" placeholder="m / ud / bol"></div>
+      </div>
+      <label>Descripción</label>
+      <input type="text" id="art-rap-desc" placeholder="Cable 4mm² negro">
+      <label>Categoría</label>
+      <select id="art-rap-cat"></select>
+      <div class="row3">
+        <div><label>€ Coste/ud</label><input type="number" id="art-rap-coste" step="0.01" placeholder="0.00" oninput="calcArtRapVenta()"></div>
+        <div><label>% Margen</label><input type="number" id="art-rap-margen" placeholder="30" oninput="calcArtRapVenta()"></div>
+        <div><label>€ Venta/ud</label><input type="number" id="art-rap-pventa" step="0.01" placeholder="auto" readonly style="background:rgba(39,174,96,.08)"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:12px;padding:10px;background:rgba(255,255,255,.04);border-radius:8px;border:1px solid var(--borde)">
+        <input type="checkbox" id="art-rap-sin-stock" style="width:18px;height:18px;accent-color:var(--acento);flex-shrink:0" onchange="toggleArtRapStock()">
+        <div>
+          <div style="font-size:.82rem;font-weight:600">No controlar stock</div>
+          <div style="font-size:.72rem;color:var(--muted)">Artículo de uso libre</div>
+        </div>
+      </div>
+      <div id="art-rap-stock-campos">
+        <div class="row2">
+          <div><label>Stock inicial</label><input type="number" id="art-rap-stock" placeholder="0"></div>
+          <div><label>Stock mínimo</label><input type="number" id="art-rap-min" placeholder="5"></div>
+        </div>
+      </div>
+      <button class="btn btn-success" onclick="guardarArtRapido()">✅ Crear y seleccionar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════════════
+// CONFIGURACIÓN GOOGLE SHEETS
+// ════════════════════════════════════════════════════════
+// Credenciales por defecto (precargadas) — se pueden cambiar desde Admin
+const DEFAULTS = {
+  SHEET_ID: '1XezzspS_yLeWg6pFoUVeANH8MqIkWnSuKor0TlPnOp4',
+  API_KEY: 'AIzaSyDdL3GlXdLA79bPG8Ueu6M_P9IFasWJ13s',
+  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzGpfaRZRRBYnHexfTo5P6LVQJKToK8cQGOAXs5uqNbbO5dU0s3pmjlK71nXGM5o6Yu/exec',
+};
+
+// Read config from URL params (for iPhone standalone mode) or localStorage or defaults
+(function(){
+  const p = new URLSearchParams(window.location.search);
+  if(p.get('gsurl')) {
+    localStorage.setItem('gs_apps_script_url', p.get('gsurl'));
+    localStorage.setItem('gs_sheet_id', p.get('gsid')||'');
+  }
+})();
+
+const CONFIG = {
+  SHEET_ID: localStorage.getItem('gs_sheet_id') || DEFAULTS.SHEET_ID,
+  API_KEY:  localStorage.getItem('gs_api_key')  || DEFAULTS.API_KEY,
+  APPS_SCRIPT_URL: localStorage.getItem('gs_apps_script_url') || DEFAULTS.APPS_SCRIPT_URL,
+};
+
+// HOJAS del Google Sheets
+const SHEETS = {
+  USUARIOS:      'USUARIOS',
+  CLIENTES:      'CLIENTES',
+  PROYECTOS:     'PROYECTOS',
+  CATALOGO:      'CATALOGO',
+  PRESUPUESTOS:  'PRESUPUESTOS',
+  PRES_LINEAS:   'PRES_LINEAS',
+  ALBARANES:     'ALBARANES',
+  ALB_LINEAS:    'ALB_LINEAS',
+  ALB_HORAS:     'ALB_HORAS',
+  COMPRAS:       'COMPRAS',
+  COM_LINEAS:    'COM_LINEAS',
+  IMPUTACIONES:  'IMPUTACIONES',
+  TIEMPOS:       'TIEMPOS',
+  CATEGORIAS:    'CATEGORIAS',
+};
+
+// ════════════════════════════════════════════════════════
+// ESTADO GLOBAL
+// ════════════════════════════════════════════════════════
+let SESSION = null;          // usuario logueado
+let DB = {
+  usuarios:     [],
+  clientes:     [],
+  proyectos:    [],
+  catalogo:     [],
+  presupuestos: [],
+  presLineas:   [],
+  albaranes:    [],
+  albLineas:    [],
+  albHoras:     [],
+  compras:      [],
+  comLineas:    [],
+  imputaciones: [],
+  tiempos:      [],
+  categorias:   [],
+};
+let comLineasTemp = [];
+let tiemposTemp = [];
+let impSeleccionados = [];
+let almacenFiltroActual = 'todos';
+let almacenTextFiltro = '';
+let gsConnected = false;
+
+// Datos temporales del formulario de albarán
+let albLineasTemp = [];   // líneas de material
+let albHorasTemp  = [];   // líneas de horas
+
+// Datos temporales del formulario de presupuesto
+let preLineasTemp = [];
+
+// ════════════════════════════════════════════════════════
+// USUARIOS LOCALES (fallback sin GSheets)
+// ════════════════════════════════════════════════════════
+const USERS_DEFAULT = [
+  {id:'1', user:'admin', pass:'admin123', nombre:'Administrador', rol:'admin'},
+  {id:'2', user:'operario1', pass:'op1234', nombre:'Juan García', rol:'operario'},
+  {id:'3', user:'operario2', pass:'op1234', nombre:'Pedro López', rol:'operario'},
+];
+
+// ════════════════════════════════════════════════════════
+// LOGIN
+// ════════════════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if(e.key==='Enter' && document.getElementById('login-screen').style.display!=='none') doLogin();
+});
+
+async function doLogin() {
+  const u = document.getElementById('lg-user').value.trim();
+  const p = document.getElementById('lg-pass').value;
+  document.getElementById('login-error').style.display='none';
+
+  let usuarios = DB.usuarios.length ? DB.usuarios : USERS_DEFAULT;
+  let found = usuarios.find(x => (x.user===u || x.email===u) && x.pass===p);
+
+  // Si no se encuentra, intentar recargar usuarios frescos desde GSheets
+  // (por si se creó un usuario nuevo y aún no se había sincronizado)
+  if(!found && CONFIG.APPS_SCRIPT_URL){
+    try{
+      const usuariosGS = await gsGet(SHEETS.USUARIOS);
+      if(usuariosGS && usuariosGS.length){
+        DB.usuarios = usuariosGS;
+        guardarLocalCache();
+        found = DB.usuarios.find(x => (x.user===u || x.email===u) && x.pass===p);
+      }
+    }catch(e){}
+  }
+
+  // Fallback final a usuarios por defecto si tampoco se encuentra
+  if(!found){
+    found = USERS_DEFAULT.find(x => x.user===u && x.pass===p);
+  }
+
+  if(!found) { document.getElementById('login-error').style.display='block'; return; }
+
+  SESSION = found;
+  localStorage.setItem('session', JSON.stringify({id:found.id,user:found.user,nombre:found.nombre,rol:found.rol}));
+  iniciarApp();
+}
+
+function doLogout() {
+  SESSION = null;
+  localStorage.removeItem('session');
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+}
+
+// ════════════════════════════════════════════════════════
+// INICIO APP
+// ════════════════════════════════════════════════════════
+let autoSyncInterval = null;
+
+async function iniciarApp() {
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('topbar-sub').textContent = SESSION.nombre + ' · ' + SESSION.rol;
+  document.getElementById('avatar-initials').textContent = SESSION.nombre.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+
+  if(SESSION.rol==='admin') document.getElementById('nav-admin').style.display='flex';
+
+  // Cargar datos al entrar
+  await cargarTodo();
+  renderDashboard();
+
+  // Sincronización automática cada 30 segundos (evita solapes con syncEnCurso)
+  let syncEnCurso = false;
+  async function sincronizarSiLibre(){
+    if(syncEnCurso) return;
+    syncEnCurso = true;
+    try{
+      await cargarTodo();
+      const pagActiva=document.querySelector('.page.active');
+      if(pagActiva) renderPagina(pagActiva.id.replace('page-',''));
+    } finally {
+      syncEnCurso = false;
+    }
+  }
+
+  if(autoSyncInterval) clearInterval(autoSyncInterval);
+  autoSyncInterval = setInterval(()=>{
+    if(document.visibilityState==='visible') sincronizarSiLibre();
+  }, 30000);
+
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.visibilityState==='visible' && SESSION) sincronizarSiLibre();
+  });
+}
+
+// ════════════════════════════════════════════════════════
+// GOOGLE SHEETS API
+// ════════════════════════════════════════════════════════
+async function gsGet(hoja) {
+  if(!CONFIG.APPS_SCRIPT_URL) return null;
+  return new Promise((resolve) => {
+    const cbName = 'cb_' + Math.random().toString(36).slice(2);
+    let settled = false;
+    const finish = (val) => {
+      if(settled) return;
+      settled = true;
+      if(window[cbName]) window[cbName] = function(){}; // no-op si llega tarde, evita ReferenceError
+      setTimeout(()=>{ try{ delete window[cbName]; }catch(e){} }, 100);
+      document.getElementById('jsonp-'+cbName)?.remove();
+      resolve(val);
+    };
+    window[cbName] = function(d) {
+      if(!d || !d.ok || !d.datos || d.datos.length<2) { finish([]); return; }
+      const headers = d.datos[0];
+      finish(d.datos.slice(1).map(row => {
+        const obj={};
+        headers.forEach((h,i) => obj[h] = row[i]||'');
+        return obj;
+      }));
+    };
+    const s = document.createElement('script');
+    s.id = 'jsonp-'+cbName;
+    s.onerror = () => finish(null);
+    s.src = CONFIG.APPS_SCRIPT_URL + '?accion=get&hoja=' + encodeURIComponent(hoja) + '&callback=' + cbName;
+    document.head.appendChild(s);
+    setTimeout(() => finish(null), 10000);
+  });
+}
+
+async function gsPost(accion, datos) {
+  if(!CONFIG.APPS_SCRIPT_URL) return false;
+  return new Promise((resolve) => {
+    const cbName = 'cb_' + Math.random().toString(36).slice(2);
+    window[cbName] = function(d) {
+      delete window[cbName];
+      document.getElementById('jsonp-'+cbName)?.remove();
+      resolve(d && d.ok);
+    };
+    // Encode POST data as GET params for JSONP
+    const params = encodeURIComponent(JSON.stringify({accion, datos}));
+    const s = document.createElement('script');
+    s.id = 'jsonp-'+cbName;
+    s.onerror = () => { delete window[cbName]; s.remove(); resolve(false); };
+    s.src = CONFIG.APPS_SCRIPT_URL + '?payload=' + params + '&callback=' + cbName;
+    document.head.appendChild(s);
+    setTimeout(() => { if(window[cbName]){ delete window[cbName]; s.remove(); resolve(false); } }, 8000);
+  });
+}
+
+async function gsUpdate(hoja, keyCol, keyVal, datos) {
+  if(!CONFIG.APPS_SCRIPT_URL) return false;
+  return new Promise((resolve) => {
+    const cbName = 'cb_' + Math.random().toString(36).slice(2);
+    let settled = false;
+    const finish = (val) => {
+      if(settled) return;
+      settled = true;
+      if(window[cbName]) window[cbName] = function(){};
+      setTimeout(()=>{ try{ delete window[cbName]; }catch(e){} }, 100);
+      document.getElementById('jsonp-'+cbName)?.remove();
+      resolve(val);
+    };
+    window[cbName] = function(d) { finish(d && d.ok); };
+    const params = encodeURIComponent(JSON.stringify({accion:'update', datos:{hoja, keyCol, keyVal, fila:datos}}));
+    const s = document.createElement('script');
+    s.id = 'jsonp-'+cbName;
+    s.onerror = () => finish(false);
+    s.src = CONFIG.APPS_SCRIPT_URL + '?payload=' + params + '&callback=' + cbName;
+    document.head.appendChild(s);
+    setTimeout(() => finish(false), 10000);
+  });
+}
+
+async function gsDelete(hoja, keyCol, keyVal) {
+  if(!CONFIG.APPS_SCRIPT_URL) return false;
+  return new Promise((resolve) => {
+    const cbName = 'cb_' + Math.random().toString(36).slice(2);
+    let settled = false;
+    const finish = (val) => {
+      if(settled) return;
+      settled = true;
+      if(window[cbName]) window[cbName] = function(){};
+      setTimeout(()=>{ try{ delete window[cbName]; }catch(e){} }, 100);
+      document.getElementById('jsonp-'+cbName)?.remove();
+      resolve(val);
+    };
+    window[cbName] = function(d) { finish(d && d.ok); };
+    const params = encodeURIComponent(JSON.stringify({accion:'delete', datos:{hoja, keyCol, keyVal}}));
+    const s = document.createElement('script');
+    s.id = 'jsonp-'+cbName;
+    s.onerror = () => finish(false);
+    s.src = CONFIG.APPS_SCRIPT_URL + '?payload=' + params + '&callback=' + cbName;
+    document.head.appendChild(s);
+    setTimeout(() => finish(false), 10000);
+  });
+}
+
+async function cargarTodo() {
+  setSyncStatus('loading');
+
+  if(CONFIG.APPS_SCRIPT_URL) {
+    const [usuarios, clientes, proyectos, catalogo, presupuestos, presLineas, albaranes, albLineas, albHoras, compras, comLineas, imputaciones, tiempos, categorias] = await Promise.all([
+      gsGet(SHEETS.USUARIOS), gsGet(SHEETS.CLIENTES), gsGet(SHEETS.PROYECTOS),
+      gsGet(SHEETS.CATALOGO), gsGet(SHEETS.PRESUPUESTOS), gsGet(SHEETS.PRES_LINEAS),
+      gsGet(SHEETS.ALBARANES), gsGet(SHEETS.ALB_LINEAS), gsGet(SHEETS.ALB_HORAS),
+      gsGet(SHEETS.COMPRAS), gsGet(SHEETS.COM_LINEAS),
+      gsGet(SHEETS.IMPUTACIONES), gsGet(SHEETS.TIEMPOS), gsGet(SHEETS.CATEGORIAS),
+    ]);
+    if(clientes !== null) {
+      DB.usuarios     = usuarios     || USERS_DEFAULT;
+      DB.clientes     = clientes     || [];
+      DB.proyectos    = proyectos    || [];
+      DB.catalogo     = catalogo     || getCatalogoLocal();
+      DB.presupuestos = presupuestos || [];
+      DB.presLineas   = presLineas   || [];
+      DB.albaranes    = albaranes    || [];
+      DB.albLineas    = albLineas    || [];
+      DB.albHoras     = albHoras     || [];
+      DB.compras      = compras      || [];
+      DB.comLineas    = comLineas    || [];
+      DB.imputaciones = imputaciones || [];
+      DB.tiempos      = tiempos      || [];
+      DB.categorias   = categorias   || [];
+      if(!DB.categorias.length) DB.categorias=getCatsDefault();
+      gsConnected = true;
+      setSyncStatus('ok');
+      guardarLocalCache();
+      return;
+    }
+  }
+
+  // Fallback: localStorage
+  cargarDesdeLocal();
+  setSyncStatus('offline');
+}
+
+function setSyncStatus(estado) {
+  const bar = document.getElementById('sync-status');
+  const txt = document.getElementById('sync-text');
+  bar.className = 'sync-bar';
+  if(estado==='ok'){
+    bar.classList.add(); txt.textContent='✓ Sincronizado con Google Sheets';
+    bar.style.cssText='background:rgba(39,174,96,.1);border-color:rgba(39,174,96,.25);color:#2ecc71';
+  } else if(estado==='offline'){
+    bar.style.cssText='background:rgba(245,166,35,.1);border-color:rgba(245,166,35,.25);color:#f5a623';
+    txt.textContent='⚠ Modo offline – datos locales';
+  } else if(estado==='loading'){
+    bar.style.cssText='background:rgba(52,152,219,.1);border-color:rgba(52,152,219,.25);color:#3498db';
+    txt.textContent='↻ Conectando con Google Sheets...';
+  } else if(estado==='error'){
+    bar.style.cssText='background:rgba(231,76,60,.1);border-color:rgba(231,76,60,.25);color:#e74c3c';
+    txt.textContent='✗ Error de conexión – guardado localmente';
+  }
+}
+
+function guardarLocalCache() {
+  localStorage.setItem('db_cache', JSON.stringify(DB));
+}
+
+function cargarDesdeLocal() {
+  const c = localStorage.getItem('db_cache');
+  if(c) {
+    const d = JSON.parse(c);
+    DB = {...DB, ...d};
+    if(!DB.catalogo.length) DB.catalogo = getCatalogoLocal();
+    if(!DB.usuarios.length) DB.usuarios = USERS_DEFAULT;
+  } else {
+    DB.catalogo = getCatalogoLocal();
+    DB.usuarios = USERS_DEFAULT;
+  }
+}
+
+function getCatalogoLocal() {
+  return [
+    {ref:'CAB-001',desc:'Cable H07V-K 1,5mm² Amarillo/Verde',cat:'Cables',uni:'m',coste:'0.45',margen:'30',stock:'500',min:'50'},
+    {ref:'CAB-002',desc:'Cable H07V-K 1,5mm² Azul',cat:'Cables',uni:'m',coste:'0.42',margen:'30',stock:'500',min:'50'},
+    {ref:'CAB-003',desc:'Cable H07V-K 2,5mm² Marrón',cat:'Cables',uni:'m',coste:'0.68',margen:'30',stock:'300',min:'30'},
+    {ref:'CAB-004',desc:'Cable RZ1-K 6mm² Negro',cat:'Cables',uni:'m',coste:'1.85',margen:'30',stock:'200',min:'20'},
+    {ref:'TUB-001',desc:'Tubo corrugado M16 gris',cat:'Tubería',uni:'m',coste:'0.28',margen:'25',stock:'200',min:'30'},
+    {ref:'TUB-002',desc:'Tubo corrugado M20 gris',cat:'Tubería',uni:'m',coste:'0.35',margen:'25',stock:'200',min:'30'},
+    {ref:'CAJ-001',desc:'Caja derivación 100x100mm',cat:'Cajas',uni:'ud',coste:'1.20',margen:'30',stock:'50',min:'10'},
+    {ref:'MEC-001',desc:'Interruptor simple 10A',cat:'Mecanismos',uni:'ud',coste:'3.50',margen:'35',stock:'30',min:'5'},
+    {ref:'MEC-003',desc:'Enchufe schuko 16A',cat:'Mecanismos',uni:'ud',coste:'4.80',margen:'35',stock:'40',min:'8'},
+    {ref:'PRO-001',desc:'PIA 10A 1P curva C',cat:'Protección',uni:'ud',coste:'8.50',margen:'30',stock:'15',min:'5'},
+    {ref:'PRO-002',desc:'PIA 16A 1P curva C',cat:'Protección',uni:'ud',coste:'8.80',margen:'30',stock:'15',min:'5'},
+    {ref:'PRO-004',desc:'Diferencial 25A 2P 30mA',cat:'Protección',uni:'ud',coste:'32.00',margen:'30',stock:'10',min:'3'},
+    {ref:'CON-002',desc:'Wago 221-412 (bolsa 50ud)',cat:'Conectores',uni:'bol',coste:'12.50',margen:'25',stock:'5',min:'2'},
+    {ref:'FIJ-001',desc:'Brida nylon 3,6x150mm (b.100)',cat:'Fijación',uni:'bol',coste:'3.50',margen:'25',stock:'10',min:'3'},
+    {ref:'CIN-001',desc:'Cinta aislante 19mm negra',cat:'Cinta/Señ.',uni:'ud',coste:'1.20',margen:'30',stock:'10',min:'3'},
+  ];
+}
+
+// ════════════════════════════════════════════════════════
+// NAVEGACIÓN
+// ════════════════════════════════════════════════════════
+function irPagina(id, btn) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  renderPagina(id);
+}
+
+function renderPagina(id) {
+  if(id==='dashboard')   renderDashboard();
+  if(id==='proyectos')   renderProyectos();
+  if(id==='presupuestos')renderPresupuestos();
+  if(id==='albaranes')   renderAlbaranes();
+  if(id==='clientes')    renderClientes();
+  if(id==='almacen')        renderAlmacen();
+  if(id==='compras')        renderCompras();
+  if(id==='clientes-wrap')  {renderClientes();renderPresupuestos();}
+  if(id==='admin')          renderAdmin();
+}
+
+// ════════════════════════════════════════════════════════
+// DASHBOARD
+// ════════════════════════════════════════════════════════
+function renderDashboard() {
+  const proyActivos = DB.proyectos.filter(p=>p.estado==='EN CURSO').length;
+  const presTotal   = DB.presupuestos.length;
+  const albTotal    = DB.albaranes.length;
+
+  const mes = new Date().toISOString().substring(0,7);
+  const facMes = DB.albaranes
+    .filter(a => (a.fecha||'').substring(0,7)===mes)
+    .reduce((s,a)=>s+parseFloat(a.total||0),0);
+
+  document.getElementById('kpi-proyectos').textContent   = proyActivos;
+  document.getElementById('kpi-presupuestos').textContent = presTotal;
+  document.getElementById('kpi-albaranes').textContent   = albTotal;
+  document.getElementById('kpi-facturado').textContent   = fmt(facMes);
+
+  // Últimos albaranes
+  const recientes = [...DB.albaranes].sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||'')).slice(0,5);
+  const dashAlb = document.getElementById('dash-albaranes');
+  dashAlb.innerHTML = recientes.length ? recientes.map(a=>`
+    <div class="list-item" onclick="verAlbaran('${a.num}')">
+      <div class="list-item-left">
+        <div class="list-item-title">${a.num} — ${a.proyecto||'—'}</div>
+        <div class="list-item-sub">${a.fecha||''} · ${a.operario||''}</div>
+      </div>
+      <div class="list-item-right">
+        <div class="list-item-amount">${fmt(parseFloat(a.total||0))}</div>
+      </div>
+    </div>`).join('') : '<div class="empty-state"><div class="empty-icon">🧾</div><p>Sin albaranes</p></div>';
+
+  // Stock bajo
+  const bajo = DB.catalogo.filter(a=>parseInt(a.stock||0)<=parseInt(a.min||0));
+  const dashSt = document.getElementById('dash-stock');
+  dashSt.innerHTML = bajo.length ? bajo.map(a=>`
+    <div class="list-item">
+      <div class="list-item-left">
+        <div class="list-item-title">${a.desc}</div>
+        <div class="list-item-sub">${a.ref} · Stock: ${a.stock} ${a.uni} (mín. ${a.min})</div>
+      </div>
+      <span class="badge badge-rojo">⚠ Bajo</span>
+    </div>`).join('') : '<div class="empty-state"><div class="empty-icon">✅</div><p>Todo el stock OK</p></div>';
+}
+
+// ════════════════════════════════════════════════════════
+// PROYECTOS
+// ════════════════════════════════════════════════════════
+function renderProyectos(filtro='') {
+  const f = String(filtro||'').toLowerCase();
+  const items = DB.proyectos.filter(p=>!f||String(p.num||'').toLowerCase().includes(f)||String(p.desc||'').toLowerCase().includes(f)||String(p.cliente||'').toLowerCase().includes(f));
+  const el = document.getElementById('lista-proyectos');
+  el.innerHTML = items.length ? items.map(p=>{
+    const badgeCls = p.estado==='EN CURSO'?'badge-verde':p.estado==='CERRADO'?'badge-gris':p.estado==='PENDIENTE'?'badge-naranja':'badge-rojo';
+    return `<div class="list-item">
+      <div class="list-item-left" onclick="verProyecto('${p.num}')" style="cursor:pointer">
+        <div class="list-item-title">${p.num} — ${p.desc||''}</div>
+        <div class="list-item-sub">${p.cliente||'Sin cliente'} · ${p.fi||''}</div>
+      </div>
+      <div class="list-item-right" style="display:flex;gap:6px;align-items:center">
+        <span class="badge ${badgeCls}">${p.estado||'—'}</span>
+        <button class="btn-xs btn-ghost" data-edit-num="${p.num}" onclick="editarProyecto(this.dataset.editNum)">✏️</button>
+        <button class="btn-xs btn-danger" data-del-num="${p.num}" onclick="eliminarProyecto(this.dataset.delNum)">🗑</button>
+      </div>
+    </div>`;
+  }).join('') : '<div class="empty-state"><div class="empty-icon">📋</div><p>Sin proyectos. Crea el primero.</p></div>';
+}
+
+function filtrarProyectos(v) { renderProyectos(v); }
+
+function abrirModalProyecto() {
+  if(document.getElementById('proy-edit-num')) document.getElementById('proy-edit-num').value='';
+  const sel = document.getElementById('proy-cliente');
+  sel.innerHTML = '<option value="">— Selecciona cliente —</option>' +
+    DB.clientes.map(c=>`<option value="${c.nombre}">${c.nombre}</option>`).join('');
+  document.getElementById('proy-fi').value = new Date().toISOString().split('T')[0];
+  abrirModal('modal-proyecto');
+}
+
+function editarProyecto(num){
+  const p=DB.proyectos.find(x=>String(x.num)===String(num));if(!p)return;
+  if(!document.getElementById('proy-edit-num')){
+    const inp=document.createElement('input');inp.type='hidden';inp.id='proy-edit-num';
+    document.getElementById('proy-num').parentNode.insertBefore(inp,document.getElementById('proy-num'));
+  }
+  document.getElementById('proy-edit-num').value=num;
+  document.getElementById('proy-num').value=p.num||'';
+  document.getElementById('proy-desc').value=p.desc||'';
+  document.getElementById('proy-fi').value=p.fi||'';
+  document.getElementById('proy-ff').value=p.ff||'';
+  document.getElementById('proy-notas').value=p.notas||'';
+  document.getElementById('proy-estado').value=p.estado||'PENDIENTE';
+  const sel=document.getElementById('proy-cliente');
+  sel.innerHTML='<option value="">— Selecciona cliente —</option>'+
+    DB.clientes.map(c=>`<option value="${c.nombre}" ${c.nombre===p.cliente?'selected':''}>${c.nombre}</option>`).join('');
+  abrirModal('modal-proyecto');
+}
+async function eliminarProyecto(num){
+  if(!confirm('¿Eliminar proyecto '+num+'?'))return;
+  DB.proyectos=DB.proyectos.filter(p=>String(p.num)!==String(num));guardarLocalCache();
+  if(gsConnected) await gsDelete(SHEETS.PROYECTOS,'num',num);
+  renderProyectos();toast('Proyecto eliminado');
+}
+async function guardarProyecto() {
+  const num   = document.getElementById('proy-num').value.trim();
+  const cli   = document.getElementById('proy-cliente').value;
+  const desc  = document.getElementById('proy-desc').value.trim();
+  const fi    = document.getElementById('proy-fi').value;
+  const ff    = document.getElementById('proy-ff').value;
+  const est   = document.getElementById('proy-estado').value;
+  const notas = document.getElementById('proy-notas').value;
+  if(!num||!desc){toast('Rellena Nº proyecto y descripción','error');return;}
+  const obj={num,cliente:cli,desc,fi,ff,estado:est,notas};
+  const editNum=document.getElementById('proy-edit-num')?document.getElementById('proy-edit-num').value:'';
+  if(editNum){
+    const idx=DB.proyectos.findIndex(p=>p.num===editNum);
+    if(idx>=0)DB.proyectos[idx]=obj;guardarLocalCache();
+    if(gsConnected) await gsUpdate(SHEETS.PROYECTOS,'num',editNum,[num,cli,desc,fi,ff,est,notas]);
+    toast('Proyecto actualizado');
+  } else {
+    DB.proyectos.push(obj);guardarLocalCache();
+    if(gsConnected) await gsPost('append',{hoja:SHEETS.PROYECTOS,fila:[num,cli,desc,fi,ff,est,notas]});
+    toast('Proyecto guardado');
+  }
+  cerrarModal('modal-proyecto');renderProyectos();
+}
+
+function verProyecto(num) {
+  const p = DB.proyectos.find(x=>String(x.num)===String(num));
+  if(!p) return;
+  document.getElementById('det-proy-title').textContent = p.num+' — '+p.desc;
+  const albs = DB.albaranes.filter(a=>String(a.proyecto)===String(num));
+  const lineasImp = DB.imputaciones.filter(a=>String(a.proyecto)===String(num));
+  const tims = DB.tiempos.filter(t=>String(t.proyecto)===String(num));
+  const totalAlb = albs.reduce((s,a)=>s+parseFloat(a.total||0),0);
+  const totalImp = lineasImp.reduce((s,l)=>s+parseFloat(l.importe||0),0);
+  const totalTim = tims.reduce((s,t)=>s+parseFloat(t.importe||0),0);
+  const totalHoras = tims.reduce((s,t)=>s+parseFloat(t.horas||0),0);
+  const costeTotal = totalImp + totalTim;
+
+  document.getElementById('det-proy-body').innerHTML = `
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi-val">${fmt(totalImp)}</div><div class="kpi-label">Material</div></div>
+      <div class="kpi"><div class="kpi-val">${fmt(totalTim)}</div><div class="kpi-label">Mano de obra</div></div>
+      <div class="kpi span2" style="background:rgba(245,166,35,.1);border-color:rgba(245,166,35,.3)">
+        <div class="kpi-val">${fmt(costeTotal)}</div><div class="kpi-label">💰 COSTE TOTAL</div>
+      </div>
+      <div class="kpi"><div class="kpi-val">${totalHoras.toFixed(1)}h</div><div class="kpi-label">Horas</div></div>
+      <div class="kpi verde"><div class="kpi-val">${fmt(totalAlb)}</div><div class="kpi-label">Facturado</div></div>
+    </div>
+    <div class="sep">Datos</div>
+    <div style="font-size:.82rem;line-height:2;color:var(--muted)">
+      <b style="color:var(--text)">Cliente:</b> ${p.cliente||'—'} &nbsp;
+      <b style="color:var(--text)">Estado:</b> ${p.estado||'—'}<br>
+      <b style="color:var(--text)">Inicio:</b> ${p.fi||'—'} &nbsp; <b style="color:var(--text)">Fin:</b> ${p.ff||'—'}
+      ${p.notas?'<br><b style="color:var(--text)">Notas:</b> '+p.notas:''}
+    </div>
+
+    <div class="sep">Material imputado
+      <button class="btn-xs btn-ghost" data-num="${num}" onclick="actualizarPreciosProyecto(this.dataset.num)" style="margin-left:8px;border-radius:20px">🔄 Actualizar precios</button>
+    </div>
+    ${lineasImp.length?`
+      <div id="tabla-imp-material"></div>`:'<p style="color:var(--muted);font-size:.82rem">Sin material imputado</p>'}
+
+    <div class="sep">Tiempos registrados</div>
+    ${tims.length?`
+      <div id="tabla-imp-tiempos"></div>`:'<p style="color:var(--muted);font-size:.82rem">Sin horas registradas</p>'}
+
+    <div class="sep">Albaranes emitidos</div>
+    ${albs.length ? albs.map(a=>`
+      <div class="list-item">
+        <div class="list-item-left"><div class="list-item-title">${a.num}</div><div class="list-item-sub">${a.fecha||''} · ${a.operario||''}</div></div>
+        <div class="list-item-right"><div class="list-item-amount">${fmt(parseFloat(a.total||0))}</div></div>
+      </div>`).join('') : '<p style="color:var(--muted);font-size:.82rem">Sin albaranes emitidos</p>'}
+
+    <div class="sep">Acciones</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
+      <button class="btn btn-primary" onclick="cerrarModal('modal-det-proy');abrirImputar('${num}')" style="margin-top:0;font-size:.8rem">📦 Imputar material</button>
+      <button class="btn btn-ghost" onclick="cerrarModal('modal-det-proy');abrirRegistrarTiempo('${num}')" style="margin-top:0;font-size:.8rem">⏱️ Registrar tiempo</button>
+      <button class="btn btn-naranja" onclick="cerrarModal('modal-det-proy');abrirModalAlbaranDesdeImp('${num}')" style="grid-column:1/-1;margin-top:0;font-size:.8rem">🧾 Generar albarán</button>
+    </div>
+  `;
+  abrirModal('modal-det-proy');
+  // Render tables after modal opens (avoids nested quote issues)
+  setTimeout(()=>{
+    renderTablaImpMaterial(lineasImp, num);
+    renderTablaImpTiempos(tims, num, totalHoras, totalTim);
+  }, 50);
+}
+
+function renderTablaImpMaterial(lineasImp, num){
+  const el=document.getElementById('tabla-imp-material');
+  if(!el)return;
+  if(!lineasImp.length){el.innerHTML='';return;}
+  let html='<div style="overflow-x:auto"><table class="tabla" style="margin-bottom:8px;min-width:400px">';
+  html+='<thead><tr><th>Artículo</th><th>Cant.</th><th>€/ud</th><th>Total</th><th></th></tr></thead><tbody>';
+  lineasImp.forEach(l=>{
+    html+=`<tr>
+      <td>${l.desc}<br><span style="color:var(--muted);font-size:.68rem">${l.ref||''}</span></td>
+      <td><input type="number" value="${l.cant}" step="0.5" min="0"
+        style="width:60px;padding:4px 6px;font-size:.78rem;background:rgba(255,255,255,.06);border:1px solid var(--borde);border-radius:5px;color:var(--text)"
+        data-lid="${l.id||''}" data-pnum="${num}"
+        onchange="editarLineaImp(this.dataset.lid,this.dataset.pnum,this.value)"></td>
+      <td>${parseFloat(l.pventa||0).toFixed(2)}€</td>
+      <td>${fmt(parseFloat(l.importe||0))}</td>
+      <td><button class="btn-xs btn-danger" style="padding:3px 7px"
+        data-lid="${l.id||''}" data-pnum="${num}" data-ref="${l.ref||''}" data-cant="${l.cant}"
+        onclick="eliminarLineaImp(this.dataset.lid,this.dataset.pnum,this.dataset.ref,this.dataset.cant)">✕</button></td>
+    </tr>`;
+  });
+  const totalImp=lineasImp.reduce((s,l)=>s+parseFloat(l.importe||0),0);
+  html+=`<tr class="total-row"><td colspan="3"><b>Total material</b></td><td colspan="2"><b>${fmt(totalImp)}</b></td></tr>`;
+  html+='</tbody></table></div>';
+  el.innerHTML=html;
+}
+
+function renderTablaImpTiempos(tims, num, totalHoras, totalTim){
+  const el=document.getElementById('tabla-imp-tiempos');
+  if(!el)return;
+  if(!tims.length){el.innerHTML='';return;}
+  let html='<div style="overflow-x:auto"><table class="tabla" style="margin-bottom:8px;min-width:400px">';
+  html+='<thead><tr><th>Operario</th><th>Fecha</th><th>Horas</th><th>€/h</th><th>Total</th><th></th></tr></thead><tbody>';
+  tims.forEach(t=>{
+    html+=`<tr>
+      <td>${t.operario||'—'}<br><span style="color:var(--muted);font-size:.68rem">${t.tipo||''}</span></td>
+      <td style="font-size:.78rem">${t.fecha||'—'}</td>
+      <td><input type="number" value="${t.horas}" step="0.5" min="0"
+        style="width:55px;padding:4px 6px;font-size:.78rem;background:rgba(255,255,255,.06);border:1px solid var(--borde);border-radius:5px;color:var(--text)"
+        data-tid="${t.id||''}" data-pnum="${num}" data-precio="${t.precio||35}"
+        onchange="editarTiempoProyecto(this.dataset.tid,this.dataset.pnum,this.value,this.dataset.precio)"></td>
+      <td style="font-size:.78rem">${parseFloat(t.precio||35).toFixed(2)}€</td>
+      <td>${fmt(parseFloat(t.importe||0))}</td>
+      <td><button class="btn-xs btn-danger" style="padding:3px 7px"
+        data-tid="${t.id||''}" data-pnum="${num}"
+        onclick="eliminarTiempoProyecto(this.dataset.tid,this.dataset.pnum)">✕</button></td>
+    </tr>`;
+  });
+  html+=`<tr class="total-row"><td colspan="2"><b>Total</b></td><td><b>${totalHoras.toFixed(1)}h</b></td><td></td><td colspan="2"><b>${fmt(totalTim)}</b></td></tr>`;
+  html+='</tbody></table></div>';
+  el.innerHTML=html;
+}
+
+// Editar cantidad de línea de material imputado
+async function editarLineaImp(id, proyNum, nuevaCant){
+  nuevaCant = parseFloat(nuevaCant)||0;
+  const imp = DB.imputaciones.find(x=>String(x.id)===String(id));
+  if(!imp) return;
+  const cantAnterior = parseFloat(imp.cant||0);
+  const pventa = parseFloat(imp.pventa||0);
+  const nuevoImporte = nuevaCant * pventa;
+  const art = DB.catalogo.find(a=>a.ref===imp.ref);
+  if(art){
+    art.stock = parseFloat(art.stock||0) + cantAnterior - nuevaCant;
+    if(gsConnected) await gsUpdate(SHEETS.CATALOGO,'ref',imp.ref,[art.ref,art.desc,art.cat,art.uni,art.coste,art.margen,art.stock,art.min,art.max||100,art.proveedor||'']);
+  }
+  imp.cant = nuevaCant;
+  imp.importe = nuevoImporte.toFixed(2);
+  guardarLocalCache();
+  if(gsConnected) await gsUpdate(SHEETS.IMPUTACIONES,'id',id,[id,imp.fecha,imp.proyecto,imp.operario,imp.ref||'',imp.desc||'',nuevaCant,imp.uni||'',pventa,nuevoImporte.toFixed(2)]);
+  toast('Línea actualizada');
+  verProyecto(proyNum);
+}
+
+// Eliminar línea de material imputado (devuelve stock)
+async function eliminarLineaImp(id, proyNum, ref, cant){
+  if(!confirm('¿Eliminar esta línea? Se devolverá el stock.'))return;
+  const imp = DB.imputaciones.find(x=>String(x.id)===String(id));
+  const refReal = ref || (imp&&imp.ref) || '';
+  const cantReal = parseFloat(cant||0);
+  const art = DB.catalogo.find(a=>a.ref===refReal);
+  if(art && cantReal>0){
+    art.stock = parseFloat(art.stock||0) + cantReal;
+    if(gsConnected) await gsUpdate(SHEETS.CATALOGO,'ref',refReal,[art.ref,art.desc,art.cat,art.uni,art.coste,art.margen,art.stock,art.min,art.max||100,art.proveedor||'']);
+  }
+  DB.imputaciones = DB.imputaciones.filter(x=>String(x.id)!==String(id));
+  guardarLocalCache();
+  if(gsConnected) await gsDelete(SHEETS.IMPUTACIONES,'id',id);
+  toast('Línea eliminada — stock devuelto');
+  verProyecto(proyNum);
+}
+
+// Editar horas de una línea de tiempo
+async function editarTiempoProyecto(id, proyNum, nuevasHoras, precio){
+  nuevasHoras = parseFloat(nuevasHoras)||0;
+  const tim = DB.tiempos.find(x=>String(x.id)===String(id));
+  if(!tim) return;
+  const nuevoImporte = nuevasHoras * parseFloat(precio||35);
+  tim.horas = nuevasHoras;
+  tim.importe = nuevoImporte.toFixed(2);
+  guardarLocalCache();
+  if(gsConnected) await gsUpdate(SHEETS.TIEMPOS,'id',id,[id,tim.fecha,tim.proyecto,tim.operario,tim.tipo,tim.ini||'',tim.fin||'',nuevasHoras,precio,nuevoImporte.toFixed(2),tim.notas||'',tim.facturado||'no']);
+  toast('Horas actualizadas');
+  verProyecto(proyNum);
+}
+
+// Eliminar línea de tiempo
+async function eliminarTiempoProyecto(id, proyNum){
+  if(!confirm('¿Eliminar este registro de horas?'))return;
+  DB.tiempos = DB.tiempos.filter(x=>String(x.id)!==String(id));
+  guardarLocalCache();
+  if(gsConnected) await gsDelete(SHEETS.TIEMPOS,'id',id);
+  toast('Horas eliminadas');
+  verProyecto(proyNum);
+}
+
+// Actualizar precios del material imputado con los precios actuales del catálogo
+async function actualizarPreciosProyecto(proyNum){
+  if(!confirm('¿Actualizar los precios de venta del material imputado con los precios actuales del catálogo?'))return;
+  const lineas = DB.imputaciones.filter(x=>String(x.proyecto)===String(proyNum));
+  let actualizados = 0;
+  for(const l of lineas){
+    const art = DB.catalogo.find(a=>a.ref===l.ref);
+    if(!art) continue;
+    const nuevoPventa = parseFloat(art.coste||0)*(1+parseFloat(art.margen||0)/100);
+    if(Math.abs(nuevoPventa - parseFloat(l.pventa||0)) < 0.001) continue;
+    l.pventa = nuevoPventa.toFixed(2);
+    l.importe = (parseFloat(l.cant||0)*nuevoPventa).toFixed(2);
+    actualizados++;
+    if(gsConnected) await gsUpdate(SHEETS.IMPUTACIONES,'id',l.id,[l.id,l.fecha,l.proyecto,l.operario,l.ref,l.desc,l.cant,l.uni,l.pventa,l.importe]);
+  }
+  guardarLocalCache();
+  toast(actualizados>0?actualizados+' líneas actualizadas con precios nuevos':'Todos los precios ya estaban al día');
+  verProyecto(proyNum);
+}
+
+// ════════════════════════════════════════════════════════
+// CLIENTES
+// ════════════════════════════════════════════════════════
+function renderClientes(filtro='') {
+  const f = (filtro||'').toLowerCase();
+  const items = DB.clientes.filter(c=>{
+    const nom=String(c.nombre||'').toLowerCase();
+    const cif=String(c.cif||'').toLowerCase();
+    return !f||nom.includes(f)||cif.includes(f);
+  });
+  const el=document.getElementById('lista-clientes');
+  if(!el) return;
+  el.innerHTML = items.length ? items.map(c=>`
+    <div class="list-item">
+      <div class="list-item-left" onclick="editarCliente('${c.id}')" style="cursor:pointer">
+        <div class="list-item-title">${c.nombre}</div>
+        <div class="list-item-sub">${c.cif||''} · ${c.tel||''} · ${c.email||''}</div>
+      </div>
+      <div class="list-item-right" style="display:flex;gap:6px;align-items:center">
+        <button class="btn-xs btn-ghost" data-edit-id="${c.id}" onclick="editarCliente(this.dataset.editId)">✏️</button>
+        <button class="btn-xs btn-danger" data-del-id="${c.id}" onclick="eliminarCliente(this.dataset.delId)">🗑</button>
+      </div>
+    </div>`).join('') : '<div class="empty-state"><div class="empty-icon">👥</div><p>Sin clientes. Añade el primero.</p></div>';
+}
+function filtrarClientes(v){renderClientes(v);}
+
+function abrirModalCliente(){
+  document.getElementById('cli-edit-id').value='';
+  ['cli-nombre','cli-cif','cli-email','cli-tel','cli-dir','cli-notas'].forEach(id=>document.getElementById(id).value='');
+  abrirModal('modal-cliente');
+}
+
+function editarCliente(id){
+  const c=DB.clientes.find(x=>String(x.id)===String(id));
+  if(!c)return;
+  document.getElementById('cli-edit-id').value=id;
+  document.getElementById('cli-nombre').value=c.nombre||'';
+  document.getElementById('cli-cif').value=c.cif||'';
+  document.getElementById('cli-email').value=c.email||'';
+  document.getElementById('cli-tel').value=c.tel||'';
+  document.getElementById('cli-dir').value=c.dir||'';
+  document.getElementById('cli-notas').value=c.notas||'';
+  abrirModal('modal-cliente');
+}
+
+async function eliminarCliente(id){
+  if(!confirm('¿Eliminar este cliente?'))return;
+  DB.clientes=DB.clientes.filter(c=>String(c.id)!==String(id));
+  guardarLocalCache();
+  if(gsConnected) await gsDelete(SHEETS.CLIENTES,'id',id);
+  renderClientes();
+  toast('Cliente eliminado');
+}
+
+async function guardarCliente(){
+  const editId=document.getElementById('cli-edit-id').value;
+  const nombre=document.getElementById('cli-nombre').value.trim();
+  const cif=document.getElementById('cli-cif').value.trim();
+  const email=document.getElementById('cli-email').value.trim();
+  const tel=document.getElementById('cli-tel').value.trim();
+  const dir=document.getElementById('cli-dir').value.trim();
+  const notas=document.getElementById('cli-notas').value;
+  if(!nombre){toast('El nombre es obligatorio','error');return;}
+  if(editId){
+    const idx=DB.clientes.findIndex(c=>c.id===editId);
+    if(idx>=0)DB.clientes[idx]={id:editId,nombre,cif,email,tel,dir,notas};
+    guardarLocalCache();
+    if(gsConnected) await gsUpdate(SHEETS.CLIENTES,'id',editId,[editId,nombre,cif,email,tel,dir,notas]);
+    toast('Cliente actualizado');
+  } else {
+    const obj={id:Date.now().toString(),nombre,cif,email,tel,dir,notas};
+    DB.clientes.push(obj);guardarLocalCache();
+    if(gsConnected) await gsPost('append',{hoja:SHEETS.CLIENTES,fila:[obj.id,nombre,cif,email,tel,dir,notas]});
+    toast('Cliente guardado');
+  }
+  cerrarModal('modal-cliente');renderClientes();
+}
+
+// ════════════════════════════════════════════════════════
+// PRESUPUESTOS
+// ════════════════════════════════════════════════════════
+function renderPresupuestos(){
+  const el=document.getElementById('lista-presupuestos');
+  el.innerHTML=DB.presupuestos.length?DB.presupuestos.map(p=>{
+    const bc=p.estado==='ACEPTADO'?'badge-verde':p.estado==='RECHAZADO'?'badge-rojo':p.estado==='ENVIADO'?'badge-azul':'badge-gris';
+    return `<div class="list-item">
+      <div class="list-item-left">
+        <div class="list-item-title">${p.num} — ${p.proyecto||'Sin proyecto'}</div>
+        <div class="list-item-sub">${p.cliente||''} · ${p.fecha||''}</div>
+      </div>
+      <div class="list-item-right" style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        <div class="list-item-amount">${fmt(parseFloat(p.total||0))}</div>
+        <span class="badge ${bc}">${p.estado}</span>
+        <div style="display:flex;gap:4px"><button class="btn-xs btn-ghost" data-id="${p.id}" onclick="editarPresupuesto(this.dataset.id)">✏️ Editar</button><button class="btn-xs btn-danger" data-id="${p.id}" onclick="eliminarPresupuesto(this.dataset.id)">🗑</button></div>
+      </div>
+    </div>`;
+  }).join(''):'<div class="empty-state"><div class="empty-icon">💰</div><p>Sin presupuestos aún</p></div>';
+}
+
+let preEditId = null;
+
+function abrirModalPresupuesto(){
+  preLineasTemp=[];
+  preEditId=null;
+  document.getElementById('pre-proyecto').innerHTML='<option value="">— Proyecto —</option>'+
+    DB.proyectos.map(p=>`<option value="${p.num}">${p.num} — ${p.desc||''}</option>`).join('');
+  document.getElementById('pre-cliente').innerHTML='<option value="">— Cliente —</option>'+
+    DB.clientes.map(c=>`<option value="${c.nombre}">${c.nombre}</option>`).join('');
+  document.getElementById('pre-fecha').value=new Date().toISOString().split('T')[0];
+  document.getElementById('pre-num').value='PRES-'+new Date().getFullYear()+'-'+(DB.presupuestos.length+1).toString().padStart(3,'0');
+  document.getElementById('pre-estado').value='BORRADOR';
+  document.getElementById('pre-notas').value='';
+  document.getElementById('pre-buscar-art').value='';
+  document.getElementById('pre-resultados-art').innerHTML='';
+  document.getElementById('pre-art-elegido').style.display='none';
+  document.querySelector('#modal-presupuesto .modal-head h3').textContent='💰 Nuevo Presupuesto';
+  renderPreLineas();
+  abrirModal('modal-presupuesto');
+}
+
+function editarPresupuesto(id){
+  const p=DB.presupuestos.find(x=>String(x.id)===String(id));
+  if(!p)return;
+  preEditId=id;
+  // Cargar líneas existentes desde DB.presLineas
+  preLineasTemp = DB.presLineas.filter(l=>String(l.presId)===String(id)).map(l=>({
+    ref:l.ref||'', desc:l.desc, cant:parseFloat(l.cant)||0, pventa:parseFloat(l.pventa)||0,
+    uni:l.uni||'ud', coste:parseFloat(l.coste||0), importe:parseFloat(l.cant||0)*parseFloat(l.pventa||0)
+  }));
+  document.getElementById('pre-proyecto').innerHTML='<option value="">— Proyecto —</option>'+
+    DB.proyectos.map(pr=>`<option value="${pr.num}" ${pr.num===p.proyecto?'selected':''}>${pr.num} — ${pr.desc||''}</option>`).join('');
+  document.getElementById('pre-cliente').innerHTML='<option value="">— Cliente —</option>'+
+    DB.clientes.map(c=>`<option value="${c.nombre}" ${c.nombre===p.cliente?'selected':''}>${c.nombre}</option>`).join('');
+  document.getElementById('pre-num').value=p.num||'';
+  document.getElementById('pre-fecha').value=p.fecha||'';
+  document.getElementById('pre-estado').value=p.estado||'BORRADOR';
+  document.getElementById('pre-notas').value=p.notas||'';
+  document.getElementById('pre-buscar-art').value='';
+  document.getElementById('pre-resultados-art').innerHTML='';
+  document.getElementById('pre-art-elegido').style.display='none';
+  document.querySelector('#modal-presupuesto .modal-head h3').textContent='✏️ Editar Presupuesto';
+  renderPreLineas();
+  abrirModal('modal-presupuesto');
+}
+
+function buscarArtPresupuesto(texto){
+  const el=document.getElementById('pre-resultados-art');
+  const t=texto.trim().toLowerCase();
+  if(!t){el.innerHTML='';return;}
+  const items=DB.catalogo.filter(a=>
+    String(a.ref||'').toLowerCase().includes(t) || String(a.desc||'').toLowerCase().includes(t)
+  ).slice(0,15);
+  const btnCrear=`<button class="btn btn-ghost btn-sm" style="width:100%;margin-top:6px;border-style:dashed"
+    data-txt="${t}" onclick="abrirArtRapido('presupuesto',this.dataset.txt)">＋ Crear artículo "${t}"</button>`;
+  if(!items.length){el.innerHTML='<p style="color:var(--muted);font-size:.78rem;padding:8px">Sin resultados</p>'+btnCrear;return;}
+  let html=`<table class="tabla" style="font-size:.74rem">
+    <thead><tr><th>Artículo</th><th>Stock</th><th>Compra</th><th>Venta</th><th style="width:36px"></th></tr></thead>
+    <tbody>`;
+  items.forEach(a=>{
+    const venta=(parseFloat(a.coste||0)*(1+parseFloat(a.margen||0)/100));
+    html+=`<tr>
+      <td style="cursor:pointer" data-ref="${a.ref}" onclick="elegirArtPresupuesto(this.dataset.ref)">${a.desc}<br><span style="color:var(--muted);font-size:.68rem">${a.ref}</span></td>
+      <td style="cursor:pointer" data-ref="${a.ref}" onclick="elegirArtPresupuesto(this.dataset.ref)">${a.stock||0} ${a.uni||''}</td>
+      <td style="cursor:pointer" data-ref="${a.ref}" onclick="elegirArtPresupuesto(this.dataset.ref)">${parseFloat(a.coste||0).toFixed(2)}€</td>
+      <td style="cursor:pointer;color:var(--acento);font-weight:700" data-ref="${a.ref}" onclick="elegirArtPresupuesto(this.dataset.ref)">${venta.toFixed(2)}€</td>
+      <td><button class="btn-xs btn-ghost" style="padding:3px 8px;white-space:nowrap" data-ref="${a.ref}" onclick="copiarArticulo(this.dataset.ref,'presupuesto')">⧉</button></td>
+    </tr>`;
+  });
+  html+=`</tbody></table>`;
+  el.innerHTML=html+btnCrear;
+}
+
+function elegirArtPresupuesto(ref){
+  const art=DB.catalogo.find(a=>a.ref===ref);
+  if(!art)return;
+  document.getElementById('pre-art-ref').value=art.ref;
+  document.getElementById('pre-uni').value=art.uni||'ud';
+  document.getElementById('pre-art-elegido-nombre').textContent=art.desc+' ('+art.ref+')';
+  document.getElementById('pre-pventa').value=(parseFloat(art.coste||0)*(1+parseFloat(art.margen||0)/100)).toFixed(2);
+  document.getElementById('pre-linea-desc').value=art.desc;
+  document.getElementById('pre-cant').value='';
+  document.getElementById('pre-art-elegido').style.display='block';
+  document.getElementById('pre-resultados-art').innerHTML='';
+  document.getElementById('pre-buscar-art').value=art.desc;
+}
+
+function addLineaPresupuesto(){
+  const ref=document.getElementById('pre-art-ref').value;
+  const desc=document.getElementById('pre-linea-desc').value.trim();
+  const cant=parseFloat(document.getElementById('pre-cant').value)||0;
+  const pventa=parseFloat(document.getElementById('pre-pventa').value)||0;
+  const uni=document.getElementById('pre-uni').value||'ud';
+  if(!desc||cant<=0||pventa<=0){toast('Completa descripción, cantidad y precio','error');return;}
+  const art=DB.catalogo.find(a=>a.ref===ref);
+  preLineasTemp.push({ref,desc,cant,pventa,uni,coste:art?parseFloat(art.coste):pventa*0.7,importe:cant*pventa});
+  renderPreLineas();
+  ['pre-cant','pre-pventa','pre-linea-desc','pre-buscar-art'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('pre-art-ref').value='';
+  document.getElementById('pre-art-elegido').style.display='none';
+  document.getElementById('pre-resultados-art').innerHTML='';
+}
+
+function renderPreLineas(){
+  const lista=document.getElementById('pre-lineas-lista');
+  lista.innerHTML=preLineasTemp.map((l,i)=>`
+    <div class="linea-check" style="cursor:default">
+      <div class="linea-info">
+        <div class="linea-info-title">${l.desc}</div>
+        <div class="linea-info-sub">${l.cant} ${l.uni} × ${l.pventa.toFixed(2)}€ = ${fmt(l.importe)}</div>
+      </div>
+      <button class="btn-xs btn-danger" onclick="preLineasTemp.splice(${i},1);renderPreLineas()">✕</button>
+    </div>`).join('') || '<p style="color:var(--muted);font-size:.78rem">Añade líneas arriba</p>';
+  const tot=preLineasTemp.reduce((s,l)=>s+l.importe,0);
+  document.getElementById('pre-total-display').textContent=fmt(tot);
+}
+
+function editarEstadoPresupuesto(id){
+  const p=DB.presupuestos.find(x=>String(x.id)===String(id));if(!p)return;
+  const nuevo=prompt('Estado actual: '+p.estado+'\nNuevo estado (BORRADOR/ENVIADO/ACEPTADO/RECHAZADO):',p.estado);
+  if(!nuevo)return;const est=nuevo.toUpperCase();
+  if(!['BORRADOR','ENVIADO','ACEPTADO','RECHAZADO'].includes(est)){toast('Estado no válido','error');return;}
+  p.estado=est;guardarLocalCache();
+  if(gsConnected)gsUpdate(SHEETS.PRESUPUESTOS,'id',id,[p.id,p.num,p.proyecto,p.cliente,p.fecha,p.estado,p.notas,p.total]);
+  renderPresupuestos();toast('Estado actualizado');
+}
+async function eliminarPresupuesto(id){
+  if(!confirm('¿Eliminar este presupuesto?'))return;
+  DB.presupuestos=DB.presupuestos.filter(p=>String(p.id)!==String(id));
+  DB.presLineas=DB.presLineas.filter(l=>String(l.presId)!==String(id));
+  guardarLocalCache();if(gsConnected)await gsDelete(SHEETS.PRESUPUESTOS,'id',id);
+  renderPresupuestos();toast('Presupuesto eliminado');
+}
+async function guardarPresupuesto(){
+  const num=document.getElementById('pre-num').value.trim();
+  const proy=document.getElementById('pre-proyecto').value;
+  const cli=document.getElementById('pre-cliente').value;
+  const fecha=document.getElementById('pre-fecha').value;
+  const est=document.getElementById('pre-estado').value;
+  const notas=document.getElementById('pre-notas').value;
+  if(!num||preLineasTemp.length===0){toast('Añade al menos una línea','error');return;}
+  const total=preLineasTemp.reduce((s,l)=>s+l.importe,0);
+
+  if(preEditId){
+    // Editar existente
+    const idx=DB.presupuestos.findIndex(p=>String(p.id)===String(preEditId));
+    const obj={id:preEditId,num,proyecto:proy,cliente:cli,fecha,estado:est,notas,total:total.toFixed(2)};
+    if(idx>=0) DB.presupuestos[idx]=obj;
+    // Borrar líneas viejas y poner las nuevas
+    DB.presLineas=DB.presLineas.filter(l=>String(l.presId)!==String(preEditId));
+    preLineasTemp.forEach(l=>DB.presLineas.push({presId:preEditId,presNum:num,...l}));
+    guardarLocalCache();
+    if(gsConnected){
+      await gsUpdate(SHEETS.PRESUPUESTOS,'id',preEditId,[preEditId,num,proy,cli,fecha,est,notas,total.toFixed(2)]);
+      // Borrar líneas antiguas de GSheets y volver a insertar (más simple y fiable)
+      await gsDelete(SHEETS.PRES_LINEAS,'presId',preEditId);
+      for(const l of preLineasTemp)
+        await gsPost('append',{hoja:SHEETS.PRES_LINEAS,fila:[preEditId,num,l.ref||'',l.desc,l.cant,l.uni,l.pventa,l.importe.toFixed(2)]});
+    }
+    toast('Presupuesto actualizado');
+  } else {
+    const obj={id:Date.now().toString(),num,proyecto:proy,cliente:cli,fecha,estado:est,notas,total:total.toFixed(2)};
+    DB.presupuestos.push(obj);
+    preLineasTemp.forEach(l=>DB.presLineas.push({presId:obj.id,presNum:num,...l}));
+    guardarLocalCache();
+    if(gsConnected){
+      await gsPost('append',{hoja:SHEETS.PRESUPUESTOS,fila:[obj.id,num,proy,cli,fecha,est,notas,total.toFixed(2)]});
+      for(const l of preLineasTemp)
+        await gsPost('append',{hoja:SHEETS.PRES_LINEAS,fila:[obj.id,num,l.ref||'',l.desc,l.cant,l.uni,l.pventa,l.importe.toFixed(2)]});
+    }
+    toast('Presupuesto guardado');
+  }
+
+  preLineasTemp=[];
+  preEditId=null;
+  cerrarModal('modal-presupuesto');
+  renderPresupuestos();
+}
+
+// ════════════════════════════════════════════════════════
+// ALBARANES
+// ════════════════════════════════════════════════════════
+function verPDFAlbaran(num){
+  const a=DB.albaranes.find(x=>String(x.num)===String(num));if(!a)return;
+  const lineas=DB.albLineas.filter(l=>l.albNum===num);
+  const horas=DB.albHoras.filter(h=>h.albNum===num);
+  try{imprimirAlbaranDatos(a,lineas.length?lineas:JSON.parse(a.lineas||'[]'),horas.length?horas:JSON.parse(a.horas||'[]'));}catch(e){imprimirAlbaranDatos(a,[],[]);}
+}
+async function eliminarAlbaran(id,num){
+  if(!confirm('¿Eliminar albarán '+num+'?'))return;
+  DB.albaranes=DB.albaranes.filter(a=>String(a.num)!==String(num));
+  DB.albLineas=DB.albLineas.filter(l=>String(l.albNum)!==String(num));
+  DB.albHoras=DB.albHoras.filter(h=>String(h.albNum)!==String(num));
+  guardarLocalCache();if(gsConnected)await gsDelete(SHEETS.ALBARANES,'id',id);
+  renderAlbaranes();renderDashboard();toast('Albarán eliminado');
+}
+let albaranesFiltroTexto='';
+function filtrarAlbaranesTexto(v){albaranesFiltroTexto=(v||'').toLowerCase();renderAlbaranes();}
+
+function poblarFiltrosAlbaranes(){
+  const selProy=document.getElementById('falb-proyecto');
+  const selCli=document.getElementById('falb-cliente');
+  const selAnio=document.getElementById('falb-anio');
+  if(!selProy||!selCli||!selAnio) return;
+  const valProy=selProy.value, valCli=selCli.value, valAnio=selAnio.value;
+
+  const proyectosUsados=[...new Set(DB.albaranes.map(a=>a.proyecto).filter(Boolean))];
+  selProy.innerHTML='<option value="">Todos</option>'+proyectosUsados.map(p=>`<option value="${p}">${p}</option>`).join('');
+
+  const clientesUsados=[...new Set(DB.albaranes.map(a=>{
+    const p=DB.proyectos.find(x=>String(x.num)===String(a.proyecto));
+    return p?p.cliente:null;
+  }).filter(Boolean))];
+  selCli.innerHTML='<option value="">Todos</option>'+clientesUsados.map(c=>`<option value="${c}">${c}</option>`).join('');
+
+  const aniosUsados=[...new Set(DB.albaranes.map(a=>(a.fecha||'').substring(0,4)).filter(Boolean))].sort().reverse();
+  selAnio.innerHTML='<option value="">Todos</option>'+aniosUsados.map(y=>`<option value="${y}">${y}</option>`).join('');
+
+  selProy.value=valProy; selCli.value=valCli; selAnio.value=valAnio;
+}
+
+function aplicarFiltrosAlbaranes(){ renderAlbaranes(); }
+
+function limpiarFiltrosAlbaranes(){
+  document.getElementById('falb-proyecto').value='';
+  document.getElementById('falb-cliente').value='';
+  document.getElementById('falb-anio').value='';
+  albaranesFiltroTexto='';
+  renderAlbaranes();
+}
+
+function renderAlbaranes(){
+  poblarFiltrosAlbaranes();
+  const el=document.getElementById('lista-albaranes-page');
+  const fProy=document.getElementById('falb-proyecto')?.value||'';
+  const fCli=document.getElementById('falb-cliente')?.value||'';
+  const fAnio=document.getElementById('falb-anio')?.value||'';
+
+  let items=[...DB.albaranes].sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+
+  if(albaranesFiltroTexto) items=items.filter(a=>String(a.num).toLowerCase().includes(albaranesFiltroTexto));
+  if(fProy) items=items.filter(a=>String(a.proyecto)===String(fProy));
+  if(fAnio) items=items.filter(a=>(a.fecha||'').substring(0,4)===fAnio);
+  if(fCli) items=items.filter(a=>{
+    const p=DB.proyectos.find(x=>String(x.num)===String(a.proyecto));
+    return p && p.cliente===fCli;
+  });
+  el.innerHTML=items.length?items.map(a=>`
+    <div class="list-item">
+      <div class="list-item-left">
+        <div style="font-size:.7rem;color:var(--muted);font-weight:600">${a.num}</div>
+        <div class="list-item-title" style="font-size:1rem">${(()=>{const p=DB.proyectos.find(x=>String(x.num)===String(a.proyecto));return p&&p.cliente?p.cliente:a.proyecto||'—';})()}</div>
+        <div class="list-item-sub">${a.proyecto||''} · ${a.fecha||''} · ${a.operario||''}</div>
+      </div>
+      <div class="list-item-right" style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        <div class="list-item-amount">${fmt(parseFloat(a.total||0))}</div>
+        <div style="display:flex;gap:4px;margin-top:2px"><button class="btn-xs btn-ghost" data-num="${a.num}" onclick="verPDFAlbaran(this.dataset.num)">🖨️</button><button class="btn-xs btn-danger" data-id="${a.id||a.num}" data-num="${a.num}" onclick="eliminarAlbaran(this.dataset.id,this.dataset.num)">🗑</button></div>
+      </div>
+    </div>`).join(''):'<div class="empty-state"><div class="empty-icon">🧾</div><p>Sin albaranes aún</p></div>';
+}
+
+function abrirModalAlbaran(proyNum=''){
+  albLineasTemp=[];
+  albHorasTemp=[];
+  // Selects
+  document.getElementById('alb-proyecto-sel').innerHTML='<option value="">— Selecciona proyecto —</option>'+
+    DB.proyectos.map(p=>`<option value="${p.num}" ${p.num===proyNum?'selected':''}>${p.num} — ${p.desc||''}</option>`).join('');
+  document.getElementById('alb-art-sel').innerHTML='<option value="">— Catálogo —</option>'+
+    DB.catalogo.map(a=>`<option value="${a.ref}">${a.ref} — ${a.desc}</option>`).join('');
+  document.getElementById('alb-fecha').value=new Date().toISOString().split('T')[0];
+  document.getElementById('alb-num').value='ALB-'+new Date().getFullYear()+'-'+(DB.albaranes.length+1).toString().padStart(3,'0');
+  document.getElementById('alb-operario').value=SESSION.nombre||'';
+  if(proyNum) onProyectoAlbaranChange(proyNum);
+  else document.getElementById('alb-lineas-pres').innerHTML='<p style="color:var(--muted);font-size:.78rem">Selecciona un proyecto para ver sus líneas de presupuesto</p>';
+  renderAlbLineas();
+  renderAlbHoras();
+  abrirModal('modal-albaran');
+}
+
+function onProyectoAlbaranChange(num){
+  const pNum=num||document.getElementById('alb-proyecto-sel').value;
+  const lineas=DB.presLineas.filter(l=>DB.presupuestos.find(p=>p.num===l.presNum&&p.proyecto===pNum&&p.estado==='ACEPTADO'));
+  // También mostrar líneas de cualquier presupuesto del proyecto
+  const todasLineas=DB.presLineas.filter(l=>{
+    const pres=DB.presupuestos.find(p=>p.num===l.presNum&&p.proyecto===pNum);
+    return !!pres;
+  });
+  const el=document.getElementById('alb-lineas-pres');
+  if(!todasLineas.length){el.innerHTML='<p style="color:var(--muted);font-size:.78rem">No hay presupuestos con líneas para este proyecto. Añade material manualmente.</p>';return;}
+  el.innerHTML=todasLineas.map((l,i)=>`
+    <div class="linea-check" onclick="toggleLineaPres(${i},this)">
+      <input type="checkbox" id="lp-${i}">
+      <div class="linea-info">
+        <div class="linea-info-title">${l.desc}</div>
+        <div class="linea-info-sub">${l.cant} ${l.uni} × ${parseFloat(l.pventa||0).toFixed(2)}€ = ${fmt(l.cant*parseFloat(l.pventa||0))}</div>
+      </div>
+    </div>`).join('');
+  el._lineas=todasLineas;
+}
+
+function toggleLineaPres(i, div){
+  const cb=div.querySelector('input');
+  cb.checked=!cb.checked;
+  div.style.background=cb.checked?'rgba(245,166,35,0.12)':'rgba(255,255,255,0.04)';
+  div.style.borderColor=cb.checked?'rgba(245,166,35,0.4)':'var(--borde)';
+}
+
+function albAutoFill(){
+  const ref=document.getElementById('alb-art-sel').value;
+  albAutoFillRef(ref);
+}
+
+function albAutoFillRef(ref){
+  const art=DB.catalogo.find(a=>a.ref===ref);
+  if(!art)return;
+  document.getElementById('alb-pventa').value=(parseFloat(art.coste)*(1+parseFloat(art.margen||0)/100)).toFixed(2);
+  document.getElementById('alb-uni').value=art.uni;
+  document.getElementById('alb-desc-extra').value=art.desc;
+  document.getElementById('alb-art-buscar').value=art.desc;
+  document.getElementById('alb-art-resultados').innerHTML='';
+}
+
+function buscarArtAlbaran(texto){
+  const el=document.getElementById('alb-art-resultados');
+  const t=(texto||'').trim().toLowerCase();
+  if(!t){el.innerHTML='';return;}
+  const items=DB.catalogo.filter(a=>
+    String(a.ref||'').toLowerCase().includes(t)||String(a.desc||'').toLowerCase().includes(t)
+  ).slice(0,12);
+  const btnCrear=`<button class="btn btn-ghost btn-sm" style="width:100%;margin-top:6px;border-style:dashed"
+    data-txt="${t}" onclick="abrirArtRapido('albaran',this.dataset.txt)">＋ Crear artículo "${t}"</button>`;
+  if(!items.length){el.innerHTML='<p style="color:var(--muted);font-size:.78rem;padding:8px">Sin resultados</p>'+btnCrear;return;}
+  let html='<table class="tabla" style="font-size:.74rem"><thead><tr><th>Artículo</th><th>Stock</th><th>Venta</th><th style="width:36px"></th></tr></thead><tbody>';
+  items.forEach(a=>{
+    const v=(parseFloat(a.coste||0)*(1+parseFloat(a.margen||0)/100));
+    html+=`<tr>
+      <td style="cursor:pointer" data-ref="${a.ref}" onclick="albAutoFillRef(this.dataset.ref)">${a.desc}<br><span style="color:var(--muted);font-size:.68rem">${a.ref}</span></td>
+      <td style="cursor:pointer" data-ref="${a.ref}" onclick="albAutoFillRef(this.dataset.ref)">${a.stock||0} ${a.uni||''}</td>
+      <td style="cursor:pointer;color:var(--acento);font-weight:700" data-ref="${a.ref}" onclick="albAutoFillRef(this.dataset.ref)">${v.toFixed(2)}€</td>
+      <td><button class="btn-xs btn-ghost" style="padding:3px 8px" data-ref="${a.ref}" onclick="copiarArticulo(this.dataset.ref,'albaran')">⧉</button></td>
+    </tr>`;
+  });
+  html+='</tbody></table>';
+  el.innerHTML=html+btnCrear;
+}
+
+function addLineaAlbaran(){
+  const ref=document.getElementById('alb-art-sel').value;
+  const desc=document.getElementById('alb-desc-extra').value.trim();
+  const cant=parseFloat(document.getElementById('alb-cant').value)||0;
+  const pventa=parseFloat(document.getElementById('alb-pventa').value)||0;
+  const uni=document.getElementById('alb-uni').value||'ud';
+  if(!desc||cant<=0||pventa<=0){toast('Completa descripción, cantidad y precio','error');return;}
+  const art=DB.catalogo.find(a=>a.ref===ref);
+  albLineasTemp.push({ref,desc,cant,pventa,uni,coste:art?parseFloat(art.coste):pventa*0.7,importe:cant*pventa,tipo:'material'});
+  if(art){art.stock=Math.max(0,parseInt(art.stock||0)-cant);guardarLocalCache();}
+  renderAlbLineas();
+  ['alb-cant','alb-pventa','alb-desc-extra'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('alb-art-sel').value='';
+}
+
+function renderAlbLineas(){
+  const el=document.getElementById('alb-horas-lista');
+  // (re-usar mismo elemento para material lines — rendered in updateAlbTotales)
+  updateAlbTotales();
+}
+
+function calcAlbHoras(){
+  const ini=document.getElementById('alb-hora-ini').value;
+  const fin=document.getElementById('alb-hora-fin').value;
+  if(ini&&fin){
+    const [hi,mi]=ini.split(':').map(Number);
+    const [hf,mf]=fin.split(':').map(Number);
+    const diff=(hf*60+mf-hi*60-mi)/60;
+    if(diff>0) document.getElementById('alb-horas-tot').value=diff.toFixed(1);
+  }
+}
+
+function addHoraAlbaran(){
+  const ini=document.getElementById('alb-hora-ini').value;
+  const fin=document.getElementById('alb-hora-fin').value;
+  const horas=parseFloat(document.getElementById('alb-horas-tot').value)||0;
+  const precio=parseFloat(document.getElementById('alb-hora-precio').value)||35;
+  const op=document.getElementById('alb-hora-op').value.trim()||SESSION.nombre;
+  if(horas<=0){toast('Introduce horas válidas','error');return;}
+  albHorasTemp.push({ini,fin,horas,precio,op,importe:horas*precio,tipo:'manoobra'});
+  renderAlbHorasList();
+  updateAlbTotales();
+  ['alb-hora-ini','alb-hora-fin','alb-horas-tot','alb-hora-op'].forEach(id=>document.getElementById(id).value='');
+}
+
+function renderAlbHorasList(){
+  const el=document.getElementById('alb-horas-lista');
+  el.innerHTML=albHorasTemp.map((h,i)=>`
+    <div class="linea-check" style="cursor:default">
+      <div class="linea-info">
+        <div class="linea-info-title">${h.op} — ${h.horas}h ${h.ini?'('+h.ini+'-'+h.fin+')':''}</div>
+        <div class="linea-info-sub">${h.horas}h × ${h.precio.toFixed(2)}€/h = ${fmt(h.importe)}</div>
+      </div>
+      <button class="btn-xs btn-danger" onclick="albHorasTemp.splice(${i},1);renderAlbHorasList();updateAlbTotales()">✕</button>
+    </div>`).join('') || '<p style="color:var(--muted);font-size:.78rem">Sin horas aún</p>';
+}
+
+function updateAlbTotales(){
+  // Líneas presupuesto seleccionadas
+  const checks=document.querySelectorAll('#alb-lineas-pres .linea-check input:checked');
+  const elLin=document.getElementById('alb-lineas-pres');
+  const linPres=elLin._lineas||[];
+  let totMat=0;
+  checks.forEach(cb=>{
+    const i=parseInt(cb.id.replace('lp-',''));
+    if(linPres[i]) totMat+=parseFloat(linPres[i].cant||0)*parseFloat(linPres[i].pventa||0);
+  });
+  // Material adicional
+  totMat += albLineasTemp.reduce((s,l)=>s+l.importe,0);
+  const totMO = albHorasTemp.reduce((s,h)=>s+h.importe,0);
+  document.getElementById('alb-tot-mat').textContent=fmt(totMat);
+  document.getElementById('alb-tot-mo').textContent=fmt(totMO);
+  document.getElementById('alb-tot-total').textContent=fmt(totMat+totMO);
+}
+
+async function guardarAlbaran(){
+  const num=document.getElementById('alb-num').value.trim();
+  const fecha=document.getElementById('alb-fecha').value;
+  const proy=document.getElementById('alb-proyecto-sel').value;
+  const op=document.getElementById('alb-operario').value;
+  const notas=document.getElementById('alb-notas').value;
+  if(!num||!proy){toast('Rellena nº albarán y proyecto','error');return;}
+
+  // Recoger líneas presupuesto marcadas
+  const checks=document.querySelectorAll('#alb-lineas-pres .linea-check input:checked');
+  const elLin=document.getElementById('alb-lineas-pres');
+  const linPres=elLin._lineas||[];
+  const lineasPres=[];
+  checks.forEach(cb=>{
+    const i=parseInt(cb.id.replace('lp-',''));
+    if(linPres[i]) lineasPres.push({...linPres[i],tipo:'presupuesto'});
+  });
+
+  const todasLineas=[...lineasPres,...albLineasTemp];
+  const totMat=todasLineas.reduce((s,l)=>s+parseFloat(l.cant||0)*parseFloat(l.pventa||l.importe/l.cant||0),0);
+  const totMO=albHorasTemp.reduce((s,h)=>s+h.importe,0);
+  const total=(totMat+totMO).toFixed(2);
+
+  const obj={id:Date.now().toString(),num,fecha,proyecto:proy,operario:op,notas,total,
+    lineas:JSON.stringify(todasLineas),horas:JSON.stringify(albHorasTemp)};
+  DB.albaranes.push(obj);
+  todasLineas.forEach(l=>DB.albLineas.push({albId:obj.id,albNum:num,...l}));
+  albHorasTemp.forEach(h=>DB.albHoras.push({albId:obj.id,albNum:num,...h}));
+  guardarLocalCache();
+
+  if(gsConnected){
+    await gsPost('append',{hoja:SHEETS.ALBARANES,fila:[obj.id,num,fecha,proy,op,notas,total]});
+    for(const l of todasLineas)
+      await gsPost('append',{hoja:SHEETS.ALB_LINEAS,fila:[obj.id,num,l.ref||'',l.desc,l.cant,l.uni||'',l.pventa||0,(l.cant*(l.pventa||0)).toFixed(2),l.tipo||'material']});
+    for(const h of albHorasTemp)
+      await gsPost('append',{hoja:SHEETS.ALB_HORAS,fila:[obj.id,num,h.op,h.ini||'',h.fin||'',h.horas,h.precio,h.importe.toFixed(2)]});
+  }
+
+  albLineasTemp=[];albHorasTemp=[];
+  cerrarModal('modal-albaran');
+  renderAlbaranes();
+  renderDashboard();
+  toast('Albarán guardado');
+
+  // Ofrecer PDF
+  setTimeout(()=>{ if(confirm('¿Generar PDF del albarán?')) imprimirAlbaranDatos(obj,todasLineas,albHorasTemp.slice()); },400);
+}
+
+function verAlbaran(num){ toast('Ver: '+num); }
+
+function imprimirAlbaran(){
+  // Previsualizar con los datos actuales del formulario
+  const num=document.getElementById('alb-num').value||'—';
+  const fecha=document.getElementById('alb-fecha').value||'—';
+  const proy=document.getElementById('alb-proyecto-sel').value||'—';
+  const op=document.getElementById('alb-operario').value||'—';
+  const notas=document.getElementById('alb-notas').value;
+  const checks=document.querySelectorAll('#alb-lineas-pres .linea-check input:checked');
+  const elLin=document.getElementById('alb-lineas-pres');
+  const linPres=elLin._lineas||[];
+  const linPrestadas=[];
+  checks.forEach(cb=>{const i=parseInt(cb.id.replace('lp-',''));if(linPres[i])linPrestadas.push(linPres[i]);});
+  const todasLineas=[...linPrestadas,...albLineasTemp];
+  const obj={num,fecha,proyecto:proy,operario:op,notas};
+  imprimirAlbaranDatos(obj,todasLineas,albHorasTemp);
+}
+
+function imprimirAlbaranDatos(alb, lineas, horas){
+  const proy=DB.proyectos.find(p=>p.num===alb.proyecto)||{};
+  const cli=DB.clientes.find(c=>c.nombre===proy.cliente)||{};
+  const totMat=lineas.reduce((s,l)=>s+parseFloat(l.cant||0)*parseFloat(l.pventa||0),0);
+  const totMO=horas.reduce((s,h)=>s+h.importe,0);
+  const total=totMat+totMO;
+
+  const html=`<html><head><meta charset="UTF-8"><style>
+    body{font-family:Arial,sans-serif;padding:30px;color:#1a1a2e;font-size:13px;max-width:800px;margin:0 auto}
+    .head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;padding-bottom:16px;border-bottom:3px solid #0F3460}
+    .logo{font-size:2rem;font-weight:900;color:#0F3460}
+    .logo span{color:#F5A623}
+    .alb-num{font-size:1.2rem;font-weight:800;color:#0F3460}
+    .datos{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:#f5f7fa;padding:14px;border-radius:8px;margin-bottom:20px;font-size:12px}
+    .dato-label{font-weight:700;font-size:10px;text-transform:uppercase;color:#666;margin-bottom:2px}
+    h2{color:#0F3460;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin:20px 0 8px;border-left:4px solid #F5A623;padding-left:8px}
+    table{width:100%;border-collapse:collapse;font-size:12px}
+    th{background:#0F3460;color:white;padding:8px;text-align:left;font-size:11px}
+    td{padding:7px 8px;border-bottom:1px solid #e8eaf0}
+    tr:nth-child(even) td{background:#f8f9fa}
+    .tot-row td{font-weight:700;background:#e8f0fe;color:#0F3460}
+    .resumen{margin-top:20px;border:2px solid #0F3460;border-radius:8px;padding:16px}
+    .res-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #eee;font-size:13px}
+    .res-row.big{font-size:16px;font-weight:800;border-bottom:none;margin-top:6px;color:#0F3460}
+    .firma{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:40px}
+    .firma-box{border-top:1px solid #999;padding-top:6px;font-size:11px;color:#666}
+    @media print{.no-print{display:none}}
+  </style></head><body>
+  <div class="head">
+    <div><div class="logo">⚡ <span>Electro</span>Gest</div><div style="font-size:11px;color:#666;margin-top:4px">Instalaciones Eléctricas</div></div>
+    <div style="text-align:right"><div class="alb-num">ALBARÁN ${alb.num}</div><div style="font-size:11px;color:#666;margin-top:4px">${alb.fecha||''}</div></div>
+  </div>
+  <div class="datos">
+    <div><div class="dato-label">Cliente</div>${cli.nombre||proy.cliente||'—'}<br><small style="color:#888">${cli.cif||''} · ${cli.dir||''}</small></div>
+    <div><div class="dato-label">Proyecto</div>${alb.proyecto||'—'}<br><small style="color:#888">${proy.desc||''}</small></div>
+    <div><div class="dato-label">Operario</div>${alb.operario||'—'}</div>
+    <div><div class="dato-label">Fecha</div>${alb.fecha||'—'}</div>
+  </div>
+  ${lineas.length?`<h2>Materiales</h2>
+  <table><thead><tr><th>Ref</th><th>Descripción</th><th>Cant.</th><th>Ud.</th><th>Precio/ud</th><th>Total</th></tr></thead><tbody>
+  ${lineas.map(l=>`<tr><td>${l.ref||'—'}</td><td>${l.desc}</td><td>${l.cant}</td><td>${l.uni||'ud'}</td><td>${parseFloat(l.pventa||0).toFixed(2)} €</td><td>${fmt(parseFloat(l.cant||0)*parseFloat(l.pventa||0))}</td></tr>`).join('')}
+  <tr class="tot-row"><td colspan="5">TOTAL MATERIALES</td><td>${fmt(totMat)}</td></tr>
+  </tbody></table>`:''}
+  ${horas.length?`<h2>Mano de Obra</h2>
+  <table><thead><tr><th>Operario</th><th>Horario</th><th>Horas</th><th>€/hora</th><th>Total</th></tr></thead><tbody>
+  ${horas.map(h=>`<tr><td>${h.op}</td><td>${h.ini||''}${h.fin?'-'+h.fin:''}</td><td>${h.horas}h</td><td>${h.precio.toFixed(2)} €</td><td>${fmt(h.importe)}</td></tr>`).join('')}
+  <tr class="tot-row"><td colspan="3">TOTAL MANO DE OBRA</td><td></td><td>${fmt(totMO)}</td></tr>
+  </tbody></table>`:''}
+  ${alb.notas?`<div style="background:#fffbe6;padding:10px;border-radius:6px;margin-top:14px;font-size:12px"><b>Notas:</b> ${alb.notas}</div>`:''}
+  <div class="resumen">
+    ${totMat>0?`<div class="res-row"><span>Total Materiales:</span><span>${fmt(totMat)}</span></div>`:''}
+    ${totMO>0?`<div class="res-row"><span>Total Mano de Obra:</span><span>${fmt(totMO)}</span></div>`:''}
+    <div class="res-row big"><span>TOTAL ALBARÁN:</span><span>${fmt(total)}</span></div>
+  </div>
+  <div class="firma">
+    <div class="firma-box">Firma cliente</div>
+    <div class="firma-box">Firma instalador</div>
+  </div>
+  <div class="no-print" style="text-align:center;margin-top:20px"><button onclick="window.print()" style="padding:12px 30px;background:#0F3460;color:white;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">🖨️ Imprimir / Guardar PDF</button></div>
+  </body></html>`;
+  const w=window.open('','_blank');w.document.write(html);w.document.close();
+}
+
+// ════════════════════════════════════════════════════════
+// ALMACÉN
+// ════════════════════════════════════════════════════════
+function renderAlmacen(filtro) {
+  if(filtro!==undefined) almacenTextFiltro=filtro.toLowerCase();
+  const f=almacenTextFiltro;
+  let items=DB.catalogo.filter(a=>!f||a.ref.toLowerCase().includes(f)||a.desc.toLowerCase().includes(f)||String(a.cat||'').toLowerCase().includes(f));
+  if(almacenFiltroActual==='bajo') items=items.filter(a=>parseInt(a.stock||0)<=parseInt(a.min||5));
+  if(almacenFiltroActual==='ok')   items=items.filter(a=>parseInt(a.stock||0)>parseInt(a.min||5));
+  const el=document.getElementById('lista-almacen');
+  el.innerHTML=items.length?items.map(a=>{
+    const stockN=parseInt(a.stock||0);
+    const minN=parseInt(a.min||5);
+    const bajo=(a.sin_stock==='1'||a.sin_stock===1||a.sin_stock===true)?false:stockN<=minN;
+    const venta=(parseFloat(a.coste||0)*(1+parseFloat(a.margen||0)/100)).toFixed(2);
+    return `<div class="list-item" style="border-left:3px solid ${bajo?'var(--rojo)':'var(--verde)'}">
+      <div class="list-item-left">
+        <div class="list-item-title">${a.desc}</div>
+        <div class="list-item-sub">${a.ref} · ${a.cat||''} · Coste: ${parseFloat(a.coste||0).toFixed(2)}€ | Venta: ${venta}€</div>
+        <div style="margin-top:4px;display:flex;gap:8px;align-items:center">
+          ${a.sin_stock==='1'||a.sin_stock===1||a.sin_stock===true
+            ? '<span class="badge badge-gris">∞ Sin control</span>'
+            : '<span class="badge '+(bajo?'badge-rojo':'badge-verde')+'">'+stockN+' '+(a.uni||'ud')+'</span>'+(bajo?'<span style="font-size:.7rem;color:var(--rojo)">⚠ Mín: '+minN+'</span>':'')}
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex-shrink:0">
+        <button class="btn-xs btn-ghost" data-ref="${a.ref}" onclick="editarArticulo(this.dataset.ref)">✏️</button>
+        <button class="btn-xs btn-danger" data-ref="${a.ref}" onclick="eliminarArticulo(this.dataset.ref)">🗑</button>
+      </div>
+    </div>`;
+  }).join(''):'<div class="empty-state"><div class="empty-icon">📦</div><p>Sin artículos en el almacén</p></div>';
+}
+
+function filtrarAlmacen(v){renderAlmacen(v);}
+
+function showMasTab(tab){
+  document.getElementById('mas-clientes').style.display=tab==='clientes'?'block':'none';
+  document.getElementById('mas-presupuestos').style.display=tab==='presupuestos'?'block':'none';
+  document.getElementById('mas-tab-clientes').style.borderBottom=tab==='clientes'?'2px solid var(--acento)':'';
+  document.getElementById('mas-tab-presupuestos').style.borderBottom=tab==='presupuestos'?'2px solid var(--acento)':'';
+}
+
+function filtroStock(tipo){
+  almacenFiltroActual=tipo;
+  ['todos','bajo','ok'].forEach(t=>{
+    const b=document.getElementById('fstock-'+t);
+    if(b){b.style.background=t===tipo?'var(--acento)':'';b.style.color=t===tipo?'#000':'';}
+  });
+  renderAlmacen();
+}
+
+function calcPVenta(){
+  const c=parseFloat(document.getElementById('art-coste').value)||0;
+  const mRaw=document.getElementById('art-margen').value;
+  const m=mRaw===''?0:parseFloat(mRaw)||0;
+  document.getElementById('art-pventa').value=(c*(1+m/100)).toFixed(2);
+}
+
+function abrirModalArticulo(){
+  document.getElementById('art-edit-ref').value='';
+  ['art-ref','art-desc','art-uni','art-coste','art-pventa','art-proveedor'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('art-margen').value='0';
+  document.getElementById('art-stock').value='0';
+  document.getElementById('art-min').value='5';
+  document.getElementById('art-max').value='100';
+  document.getElementById('art-sin-stock').checked=false;
+  document.getElementById('art-stock-campos').style.display='block';
+  document.getElementById('modal-art-title').textContent='📦 Nuevo Artículo';
+  poblarSelectCats('art-cat','');
+  poblarSelectCats('art-rap-cat','');
+  abrirModal('modal-articulo');
+}
+
+function editarArticulo(ref){
+  const a=DB.catalogo.find(x=>String(x.ref)===String(ref));
+  if(!a)return;
+  document.getElementById('art-edit-ref').value=ref;
+  document.getElementById('art-ref').value=a.ref||'';
+  document.getElementById('art-desc').value=a.desc||'';
+  document.getElementById('art-uni').value=a.uni||'';
+  document.getElementById('art-coste').value=a.coste||'';
+  document.getElementById('art-margen').value=a.margen||0;
+  document.getElementById('art-pventa').value=(parseFloat(a.coste||0)*(1+parseFloat(a.margen||0)/100)).toFixed(2);
+  document.getElementById('art-stock').value=a.stock||0;
+  document.getElementById('art-min').value=a.min||5;
+  document.getElementById('art-max').value=a.max||100;
+  document.getElementById('art-proveedor').value=a.proveedor||'';
+  const sinStockVal=a.sin_stock==='1'||a.sin_stock===1||a.sin_stock===true;
+  document.getElementById('art-sin-stock').checked=sinStockVal;
+  document.getElementById('art-stock-campos').style.display=sinStockVal?'none':'block';
+  poblarSelectCats('art-cat',a.cat||'');
+  document.getElementById('modal-art-title').textContent='✏️ Editar Artículo';
+  abrirModal('modal-articulo');
+}
+
+async function guardarArticulo(){
+  const editRef=document.getElementById('art-edit-ref').value;
+  const ref=document.getElementById('art-ref').value.trim();
+  const desc=document.getElementById('art-desc').value.trim();
+  const uni=document.getElementById('art-uni').value.trim()||'ud';
+  const cat=document.getElementById('art-cat').value;
+  const coste=parseFloat(document.getElementById('art-coste').value)||0;
+  const margen=parseFloat(document.getElementById('art-margen').value)||30;
+  const stock=parseFloat(document.getElementById('art-stock').value)||0;
+  const min=parseFloat(document.getElementById('art-min').value)||5;
+  const max=parseFloat(document.getElementById('art-max').value)||100;
+  const proveedor=document.getElementById('art-proveedor').value.trim();
+  if(!ref||!desc){toast('Referencia y descripción obligatorias','error');return;}
+  const sinStock=document.getElementById('art-sin-stock').checked?'1':'0';
+  const obj={ref,desc,cat,uni,coste,margen,stock,min,max,proveedor,sin_stock:sinStock};
+  if(editRef){
+    const idx=DB.catalogo.findIndex(a=>String(a.ref)===String(editRef));
+    if(idx>=0) DB.catalogo[idx]=obj;
+    guardarLocalCache();
+    if(gsConnected) await gsUpdate(SHEETS.CATALOGO,'ref',editRef,[ref,desc,cat,uni,coste,margen,stock,min,max,proveedor,sinStock]);
+    toast('Artículo actualizado');
+  } else {
+    if(DB.catalogo.find(a=>a.ref===ref)){toast('Esa referencia ya existe','error');return;}
+    DB.catalogo.push(obj);
+    guardarLocalCache();
+    if(gsConnected) await gsPost('append',{hoja:SHEETS.CATALOGO,fila:[ref,desc,cat,uni,coste,margen,stock,min,max,proveedor,sinStock]});
+    toast('Artículo añadido');
+  }
+  cerrarModal('modal-articulo');
+  renderAlmacen();
+  renderDashboard();
+}
+
+async function eliminarArticulo(ref){
+  if(!confirm('¿Eliminar artículo '+ref+'?'))return;
+  DB.catalogo=DB.catalogo.filter(a=>String(a.ref)!==String(ref));
+  guardarLocalCache();
+  if(gsConnected) await gsDelete(SHEETS.CATALOGO,'ref',ref);
+  renderAlmacen();
+  toast('Artículo eliminado');
+}
+
+// ════════════════════════════════════════════════════════
+// ALBARANES DE COMPRA
+// ════════════════════════════════════════════════════════
+function renderCompras(){
+  const el=document.getElementById('lista-compras');
+  const items=[...DB.compras].sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+  el.innerHTML=items.length?items.map(c=>`
+    <div class="list-item">
+      <div class="list-item-left">
+        <div class="list-item-title">${c.num}</div>
+        <div class="list-item-sub">${c.proveedor||'—'} · ${c.fecha||''}</div>
+      </div>
+      <div class="list-item-right" style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        <div class="list-item-amount">${fmt(parseFloat(c.total||0))}</div>
+        <div style="display:flex;gap:4px">
+          <button class="btn-xs btn-ghost" data-id="${c.id}" onclick="editarCompra(this.dataset.id)">✏️</button>
+          <button class="btn-xs btn-danger" data-id="${c.id}" onclick="eliminarCompra(this.dataset.id)">🗑</button>
+        </div>
+      </div>
+    </div>`).join(''):'<div class="empty-state"><div class="empty-icon">🛒</div><p>Sin albaranes de compra</p></div>';
+}
+
+function abrirModalCompra(){
+  comLineasTemp=[];
+  document.getElementById('com-edit-id').value='';
+  document.getElementById('com-num').value='AC-'+new Date().getFullYear()+'-'+(DB.compras.length+1).toString().padStart(3,'0');
+  document.getElementById('com-fecha').value=new Date().toISOString().split('T')[0];
+  document.getElementById('com-proveedor').value='';
+  document.getElementById('com-notas').value='';
+  document.getElementById('com-buscar-art').value='';
+  document.getElementById('com-resultados-art').innerHTML='';
+  document.getElementById('com-art-elegido').style.display='none';
+  document.querySelector('#modal-compra .modal-head h3').textContent='🛒 Albarán de Compra';
+  renderComLineas();
+  abrirModal('modal-compra');
+}
+
+function editarCompra(id){
+  const c=DB.compras.find(x=>String(x.id)===String(id));
+  if(!c)return;
+  // Cargar líneas de esta compra
+  comLineasTemp=DB.comLineas.filter(l=>String(l.comId)===String(id)).map(l=>({
+    ref:l.ref||'',desc:l.desc,cant:parseFloat(l.cant)||0,
+    coste:parseFloat(l.coste)||0,uni:l.uni||'ud',
+    importe:parseFloat(l.importe)||(parseFloat(l.cant||0)*parseFloat(l.coste||0))
+  }));
+  document.getElementById('com-edit-id').value=id;
+  document.getElementById('com-num').value=c.num||'';
+  document.getElementById('com-fecha').value=c.fecha||'';
+  document.getElementById('com-proveedor').value=c.proveedor||'';
+  document.getElementById('com-notas').value=c.notas||'';
+  document.getElementById('com-buscar-art').value='';
+  document.getElementById('com-resultados-art').innerHTML='';
+  document.getElementById('com-art-elegido').style.display='none';
+  document.querySelector('#modal-compra .modal-head h3').textContent='✏️ Editar Compra';
+  renderComLineas();
+  abrirModal('modal-compra');
+}
+
+function buscarArtCompra(texto){
+  const el=document.getElementById('com-resultados-art');
+  const t=texto.trim().toLowerCase();
+  if(!t){el.innerHTML='';return;}
+  const items=DB.catalogo.filter(a=>
+    String(a.ref||'').toLowerCase().includes(t)||String(a.desc||'').toLowerCase().includes(t)
+  ).slice(0,15);
+  const btnCrearC=`<button class="btn btn-ghost btn-sm" style="width:100%;margin-top:6px;border-style:dashed"
+    data-txt="${t}" onclick="abrirArtRapido('compra',this.dataset.txt)">＋ Crear artículo "${t}"</button>`;
+  if(!items.length){el.innerHTML='<p style="color:var(--muted);font-size:.78rem;padding:8px">Sin resultados</p>'+btnCrearC;return;}
+  let htmlC=`<table class="tabla" style="font-size:.74rem">
+    <thead><tr><th>Artículo</th><th>Stock</th><th>Coste actual</th><th style="width:36px"></th></tr></thead><tbody>`;
+  items.forEach(a=>{
+    htmlC+=`<tr>
+      <td style="cursor:pointer" data-ref="${a.ref}" onclick="elegirArtCompra(this.dataset.ref)">${a.desc}<br><span style="color:var(--muted);font-size:.68rem">${a.ref}</span></td>
+      <td style="cursor:pointer" data-ref="${a.ref}" onclick="elegirArtCompra(this.dataset.ref)">${a.stock||0} ${a.uni||''}</td>
+      <td style="cursor:pointer" data-ref="${a.ref}" onclick="elegirArtCompra(this.dataset.ref)">${parseFloat(a.coste||0).toFixed(2)}€</td>
+      <td><button class="btn-xs btn-ghost" style="padding:3px 8px" data-ref="${a.ref}" onclick="copiarArticulo(this.dataset.ref,'compra')">⧉</button></td>
+    </tr>`;
+  });
+  htmlC+=`</tbody></table>`;
+  el.innerHTML=htmlC+btnCrearC;
+}
+
+function elegirArtCompra(ref){
+  const a=DB.catalogo.find(x=>x.ref===ref);
+  if(!a)return;
+  document.getElementById('com-art-ref').value=a.ref;
+  document.getElementById('com-uni').value=a.uni||'ud';
+  document.getElementById('com-art-elegido-nombre').textContent=a.desc+' ('+a.ref+') — Stock actual: '+a.stock+' '+a.uni;
+  document.getElementById('com-coste').value=parseFloat(a.coste||0).toFixed(2);
+  document.getElementById('com-desc').value=a.desc;
+  document.getElementById('com-cant').value='';
+  document.getElementById('com-art-elegido').style.display='block';
+  document.getElementById('com-resultados-art').innerHTML='';
+  document.getElementById('com-buscar-art').value=a.desc;
+}
+
+function addLineaCompra(){
+  const ref=document.getElementById('com-art-ref').value;
+  const desc=document.getElementById('com-desc').value.trim();
+  const cant=parseFloat(document.getElementById('com-cant').value)||0;
+  const coste=parseFloat(document.getElementById('com-coste').value)||0;
+  const uni=document.getElementById('com-uni').value||'ud';
+  if(!desc||cant<=0||coste<=0){toast('Completa descripción, cantidad y precio','error');return;}
+  comLineasTemp.push({ref,desc,cant,coste,uni,importe:cant*coste});
+  renderComLineas();
+  ['com-cant','com-coste','com-desc','com-buscar-art'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('com-art-ref').value='';
+  document.getElementById('com-art-elegido').style.display='none';
+  document.getElementById('com-resultados-art').innerHTML='';
+}
+
+function renderComLineas(){
+  const el=document.getElementById('com-lineas-lista');
+  el.innerHTML=comLineasTemp.map((l,i)=>`
+    <div class="linea-check" style="cursor:default">
+      <div class="linea-info">
+        <div class="linea-info-title">${l.desc}</div>
+        <div class="linea-info-sub">${l.cant} ${l.uni} × ${l.coste.toFixed(2)}€ = ${fmt(l.importe)}</div>
+      </div>
+      <button class="btn-xs btn-danger" onclick="comLineasTemp.splice(${i},1);renderComLineas()">✕</button>
+    </div>`).join('')||'<p style="color:var(--muted);font-size:.78rem">Añade líneas arriba</p>';
+  const tot=comLineasTemp.reduce((s,l)=>s+l.importe,0);
+  document.getElementById('com-total-display').textContent=fmt(tot);
+}
+
+async function guardarCompra(){
+  const editId=document.getElementById('com-edit-id').value;
+  const num=document.getElementById('com-num').value.trim();
+  const fecha=document.getElementById('com-fecha').value;
+  const proveedor=document.getElementById('com-proveedor').value.trim();
+  const notas=document.getElementById('com-notas').value;
+  if(!num||comLineasTemp.length===0){toast('Añade al menos una línea','error');return;}
+
+  // Para cada línea, actualizar stock y preguntar sobre precio si cambia
+  for(const l of comLineasTemp){
+    const art=DB.catalogo.find(a=>String(a.ref)===String(l.ref));
+    if(art){
+      // Actualizar stock
+      const nuevoStock=parseFloat(art.stock||0)+l.cant;
+      // Comprobar si el precio ha cambiado
+      if(l.coste && parseFloat(art.coste||0)!==l.coste){
+        const precioActual=parseFloat(art.coste||0).toFixed(2);
+        const precioNuevo=l.coste.toFixed(2);
+        const actualizar=confirm('\u26a0\ufe0f CAMBIO DE PRECIO\n\nArt\u00edculo: '+l.desc+'\nPrecio actual: '+precioActual+'\u20ac\nPrecio en esta compra: '+precioNuevo+'\u20ac\n\n\u00bfActualizar el precio de coste al nuevo precio?');
+        if(actualizar) art.coste=l.coste;
+      }
+      art.stock=nuevoStock;
+      if(gsConnected) await gsUpdate(SHEETS.CATALOGO,'ref',art.ref,[art.ref,art.desc,art.cat,art.uni,art.coste,art.margen,art.stock,art.min,art.max||100,art.proveedor||'']);
+    }
+  }
+
+  const total=comLineasTemp.reduce((s,l)=>s+l.importe,0);
+  if(editId){
+    const idx=DB.compras.findIndex(c=>String(c.id)===String(editId));
+    const obj={id:editId,num,fecha,proveedor,notas,total:total.toFixed(2)};
+    if(idx>=0) DB.compras[idx]=obj;
+    DB.comLineas=DB.comLineas.filter(l=>String(l.comId)!==String(editId));
+    comLineasTemp.forEach(l=>DB.comLineas.push({comId:editId,comNum:num,...l}));
+    guardarLocalCache();
+    if(gsConnected){
+      await gsUpdate(SHEETS.COMPRAS,'id',editId,[editId,num,fecha,proveedor,notas,total.toFixed(2)]);
+      await gsDelete(SHEETS.COM_LINEAS,'comId',editId);
+      for(const l of comLineasTemp)
+        await gsPost('append',{hoja:SHEETS.COM_LINEAS,fila:[editId,num,l.ref||'',l.desc,l.cant,l.uni,l.coste,l.importe.toFixed(2)]});
+    }
+    toast('Compra actualizada');
+  } else {
+    const obj={id:Date.now().toString(),num,fecha,proveedor,notas,total:total.toFixed(2)};
+    DB.compras.push(obj);
+    comLineasTemp.forEach(l=>DB.comLineas.push({comId:obj.id,comNum:num,...l}));
+    guardarLocalCache();
+    if(gsConnected){
+      await gsPost('append',{hoja:SHEETS.COMPRAS,fila:[obj.id,num,fecha,proveedor,notas,total.toFixed(2)]});
+      for(const l of comLineasTemp)
+        await gsPost('append',{hoja:SHEETS.COM_LINEAS,fila:[obj.id,num,l.ref||'',l.desc,l.cant,l.uni,l.coste,l.importe.toFixed(2)]});
+    }
+    toast('Compra registrada — stock actualizado');
+  }
+  comLineasTemp=[];
+  cerrarModal('modal-compra');
+  renderCompras();
+  renderAlmacen();
+  renderDashboard();
+}
+
+async function eliminarCompra(id){
+  if(!confirm('¿Eliminar este albarán de compra?'))return;
+  DB.compras=DB.compras.filter(c=>String(c.id)!==String(id));
+  guardarLocalCache();
+  if(gsConnected) await gsDelete(SHEETS.COMPRAS,'id',id);
+  renderCompras();
+  toast('Compra eliminada');
+}
+
+// ════════════════════════════════════════════════════════
+// IMPUTAR MATERIAL A PROYECTO
+// ════════════════════════════════════════════════════════
+function abrirImputar(proyNum){
+  impSeleccionados=[];
+  document.getElementById('imp-proyecto').value=proyNum;
+  const p=DB.proyectos.find(x=>String(x.num)===String(proyNum));
+  document.getElementById('imp-proyecto-disp').value=proyNum+(p?' — '+p.desc:'');
+  document.getElementById('imp-title').textContent='📤 Imputar Material — '+proyNum;
+  document.getElementById('imp-fecha').value=new Date().toISOString().split('T')[0];
+  document.getElementById('imp-operario').value=SESSION.nombre||'';
+  document.getElementById('imp-buscar-art').value='';
+  document.getElementById('imp-resultados-art').innerHTML='';
+  renderImpSeleccionados();
+  abrirModal('modal-imputar');
+}
+
+function buscarArtImputar(texto){
+  const el=document.getElementById('imp-resultados-art');
+  const t=texto.trim().toLowerCase();
+  if(!t){el.innerHTML='';return;}
+  const items=DB.catalogo.filter(a=>
+    (String(a.ref||'').toLowerCase().includes(t) || String(a.desc||'').toLowerCase().includes(t))
+    && parseFloat(a.stock||0)>0
+  ).slice(0,15);
+  const btnCrearI=`<button class="btn btn-ghost btn-sm" style="width:100%;margin-top:6px;border-style:dashed"
+    data-txt="${t}" onclick="abrirArtRapido('imputar',this.dataset.txt)">＋ Crear artículo "${t}"</button>`;
+  if(!items.length){el.innerHTML='<p style="color:var(--muted);font-size:.78rem;padding:8px">Sin resultados o sin stock</p>'+btnCrearI;return;}
+  let htmlI=`<table class="tabla" style="font-size:.74rem">
+    <thead><tr><th>Artículo</th><th>Stock</th><th>Compra</th><th>Venta</th><th style="width:36px"></th></tr></thead><tbody>`;
+  items.forEach(a=>{
+    const venta=(parseFloat(a.coste||0)*(1+parseFloat(a.margen||0)/100));
+    htmlI+=`<tr>
+      <td style="cursor:pointer" data-ref="${a.ref}" onclick="addImpSeleccionado(this.dataset.ref)">${a.desc}<br><span style="color:var(--muted);font-size:.68rem">${a.ref}</span></td>
+      <td style="cursor:pointer" data-ref="${a.ref}" onclick="addImpSeleccionado(this.dataset.ref)">${a.stock} ${a.uni||''}</td>
+      <td style="cursor:pointer" data-ref="${a.ref}" onclick="addImpSeleccionado(this.dataset.ref)">${parseFloat(a.coste||0).toFixed(2)}€</td>
+      <td style="cursor:pointer;color:var(--acento);font-weight:700" data-ref="${a.ref}" onclick="addImpSeleccionado(this.dataset.ref)">${venta.toFixed(2)}€</td>
+      <td><button class="btn-xs btn-ghost" style="padding:3px 8px" data-ref="${a.ref}" onclick="copiarArticulo(this.dataset.ref,'imputar')">⧉</button></td>
+    </tr>`;
+  });
+  htmlI+=`</tbody></table>`;
+  el.innerHTML=htmlI+btnCrearI;
+}
+
+function addImpSeleccionado(ref){
+  const art=DB.catalogo.find(a=>a.ref===ref);
+  if(!art)return;
+  if(impSeleccionados.find(s=>s.ref===ref)){toast('Ese artículo ya está en la lista','error');return;}
+  const pventa=parseFloat(art.coste||0)*(1+parseFloat(art.margen||0)/100);
+  impSeleccionados.push({ref:art.ref,desc:art.desc,uni:art.uni,stockDisp:parseFloat(art.stock||0),coste:parseFloat(art.coste||0),pventa,cant:1});
+  document.getElementById('imp-buscar-art').value='';
+  document.getElementById('imp-resultados-art').innerHTML='';
+  renderImpSeleccionados();
+}
+
+function renderImpSeleccionados(){
+  const el=document.getElementById('imp-seleccionados');
+  el.innerHTML=impSeleccionados.length?impSeleccionados.map((s,i)=>`
+    <div class="linea-check" style="cursor:default">
+      <div class="linea-info">
+        <div class="linea-info-title">${s.desc}</div>
+        <div class="linea-info-sub">${s.ref} · Stock disp: ${s.stockDisp} ${s.uni} · ${s.pventa.toFixed(2)}€/ud</div>
+      </div>
+      <input type="number" value="${s.cant}" min="0.5" max="${s.stockDisp}" step="0.5"
+        style="width:70px;padding:6px 8px;font-size:.82rem;margin-left:8px"
+        oninput="impSeleccionados[${i}].cant=parseFloat(this.value)||0;actualizarImpTotal()">
+      <button class="btn-xs btn-danger" style="margin-left:6px" onclick="impSeleccionados.splice(${i},1);renderImpSeleccionados()">✕</button>
+    </div>`).join(''):'<p style="color:var(--muted);font-size:.78rem">Busca y selecciona artículos arriba</p>';
+  actualizarImpTotal();
+}
+
+function actualizarImpTotal(){
+  const total=impSeleccionados.reduce((s,a)=>s+(a.cant*a.pventa),0);
+  document.getElementById('imp-total').textContent=fmt(total);
+}
+
+async function confirmarImputacion(){
+  const proy=document.getElementById('imp-proyecto').value;
+  const fecha=document.getElementById('imp-fecha').value;
+  const op=document.getElementById('imp-operario').value;
+  if(!proy){toast('Error: proyecto no definido','error');return;}
+  if(impSeleccionados.length===0){toast('Selecciona al menos un artículo','error');return;}
+
+  const lineas=[];
+  for(const s of impSeleccionados){
+    if(s.cant<=0) continue;
+    const art=DB.catalogo.find(a=>a.ref===s.ref);
+    if(!art) continue;
+    if(s.cant>parseFloat(art.stock||0)){toast('Stock insuficiente para '+s.ref,'error');return;}
+    lineas.push({ref:art.ref,desc:art.desc,cant:s.cant,uni:art.uni,pventa:s.pventa,coste:parseFloat(art.coste||0),importe:s.cant*s.pventa,tipo:'material'});
+    art.stock=parseFloat(art.stock||0)-s.cant;
+    if(gsConnected) await gsUpdate(SHEETS.CATALOGO,'ref',art.ref,[art.ref,art.desc,art.cat,art.uni,art.coste,art.margen,art.stock,art.min,art.max||100,art.proveedor||'']);
+  }
+  if(lineas.length===0){toast('Sin líneas válidas para imputar','error');return;}
+
+  const id=Date.now().toString();
+  const total=lineas.reduce((s,l)=>s+l.importe,0);
+  const imp={id,fecha,proyecto:proy,operario:op,total:total.toFixed(2),lineas:JSON.stringify(lineas)};
+  DB.imputaciones.push(imp);
+  guardarLocalCache();
+  if(gsConnected){
+    for(const l of lineas)
+      await gsPost('append',{hoja:SHEETS.IMPUTACIONES,fila:[id,fecha,proy,op,l.ref,l.desc,l.cant,l.uni,l.pventa.toFixed(2),l.importe.toFixed(2)]});
+  }
+
+  impSeleccionados=[];
+  cerrarModal('modal-imputar');
+  renderAlmacen();
+  renderDashboard();
+  toast('Material imputado al proyecto '+proy+' — stock descontado');
+}
+
+// ════════════════════════════════════════════════════════
+// TIEMPOS
+// ════════════════════════════════════════════════════════
+function abrirRegistrarTiempo(proyNum){
+  document.getElementById('tim-proyecto').value=proyNum;
+  const p=DB.proyectos.find(x=>String(x.num)===String(proyNum));
+  document.getElementById('tim-proyecto-disp').value=proyNum+(p?' — '+p.desc:'');
+  document.getElementById('tim-fecha').value=new Date().toISOString().split('T')[0];
+  document.getElementById('tim-operario').value=SESSION.nombre||'';
+  document.getElementById('tim-precio').value='35';
+  ['tim-ini','tim-fin','tim-horas','tim-notas'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('tim-importe-display').textContent='0,00 €';
+  abrirModal('modal-tiempo');
+}
+
+function calcTimHoras(){
+  const ini=document.getElementById('tim-ini').value;
+  const fin=document.getElementById('tim-fin').value;
+  if(ini&&fin){
+    const [hi,mi]=ini.split(':').map(Number);
+    const [hf,mf]=fin.split(':').map(Number);
+    const diff=(hf*60+mf-hi*60-mi)/60;
+    if(diff>0){
+      document.getElementById('tim-horas').value=diff.toFixed(1);
+      actualizarTimImporte();
+    }
+  }
+}
+
+function actualizarTimImporte(){
+  const h=parseFloat(document.getElementById('tim-horas').value)||0;
+  const p=parseFloat(document.getElementById('tim-precio').value)||0;
+  document.getElementById('tim-importe-display').textContent=fmt(h*p);
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('tim-horas')?.addEventListener('input',actualizarTimImporte);
+  document.getElementById('tim-precio')?.addEventListener('input',actualizarTimImporte);
+});
+
+async function guardarTiempo(){
+  const proy=document.getElementById('tim-proyecto').value;
+  const fecha=document.getElementById('tim-fecha').value;
+  const operario=document.getElementById('tim-operario').value.trim();
+  const tipo=document.getElementById('tim-tipo').value;
+  const ini=document.getElementById('tim-ini').value;
+  const fin=document.getElementById('tim-fin').value;
+  const horas=parseFloat(document.getElementById('tim-horas').value)||0;
+  const precio=parseFloat(document.getElementById('tim-precio').value)||35;
+  const notas=document.getElementById('tim-notas').value;
+  if(!operario||horas<=0){toast('Completa operario y horas','error');return;}
+  const importe=horas*precio;
+  const id=Date.now().toString();
+  const obj={id,fecha,proyecto:proy,operario,tipo,ini,fin,horas,precio,importe:importe.toFixed(2),notas,facturado:'no'};
+  DB.tiempos.push(obj);
+  guardarLocalCache();
+  if(gsConnected) await gsPost('append',{hoja:SHEETS.TIEMPOS,fila:[id,fecha,proy,operario,tipo,ini,fin,horas,precio,importe.toFixed(2),notas,'no']});
+  cerrarModal('modal-tiempo');
+  toast('Tiempo registrado: '+horas+'h · '+fmt(importe));
+}
+
+// ════════════════════════════════════════════════════════
+// GENERAR ALBARÁN DESDE IMPUTACIONES
+// ════════════════════════════════════════════════════════
+function abrirModalAlbaranDesdeImp(proyNum){
+  document.getElementById('albmp-proyecto').value=proyNum;
+  document.getElementById('albmp-fecha').value=new Date().toISOString().split('T')[0];
+  document.getElementById('albmp-operario').value=SESSION.nombre||'';
+  document.getElementById('albmp-notas').value='';
+  document.getElementById('albmp-num').value='ALB-'+new Date().getFullYear()+'-'+(DB.albaranes.length+1).toString().padStart(3,'0');
+
+  // Material imputado (cada fila de DB.imputaciones ya es una línea individual)
+  const lineasMat=DB.imputaciones.filter(i=>String(i.proyecto)===String(proyNum));
+
+  const matEl=document.getElementById('albmp-material-lista');
+  matEl._lineas=lineasMat;
+  matEl.innerHTML=lineasMat.length?lineasMat.map((l,i)=>`
+    <div class="linea-check" id="albmp-mat-${i}" onclick="toggleAlbmpItem('mat-${i}',this)">
+      <input type="checkbox" id="albmp-cb-mat-${i}" checked>
+      <div class="linea-info">
+        <div class="linea-info-title">${l.desc}</div>
+        <div class="linea-info-sub">${l.cant} ${l.uni||''} × ${parseFloat(l.pventa||0).toFixed(2)}€ = ${fmt(parseFloat(l.importe||(parseFloat(l.cant||0)*parseFloat(l.pventa||0))))}</div>
+      </div>
+    </div>`).join(''):'<p style="color:var(--muted);font-size:.78rem">Sin material imputado</p>';
+
+  // Tiempos no facturados
+  const tims=DB.tiempos.filter(t=>String(t.proyecto)===String(proyNum)&&t.facturado!=='si');
+  const timEl=document.getElementById('albmp-tiempos-lista');
+  timEl._tiempos=tims;
+  timEl.innerHTML=tims.length?tims.map((t,i)=>`
+    <div class="linea-check" id="albmp-tim-${i}" onclick="toggleAlbmpItem('tim-${i}',this)">
+      <input type="checkbox" id="albmp-cb-tim-${i}" checked>
+      <div class="linea-info">
+        <div class="linea-info-title">${t.operario} — ${t.tipo||''}</div>
+        <div class="linea-info-sub">${t.fecha||''} · ${t.horas}h × ${t.precio}€/h = ${fmt(parseFloat(t.importe||0))}</div>
+      </div>
+    </div>`).join(''):'<p style="color:var(--muted);font-size:.78rem">Sin tiempos pendientes de facturar</p>';
+
+  actualizarAlbmpTotales();
+  abrirModal('modal-alb-imp');
+}
+
+function toggleAlbmpItem(id, div){
+  const cb=document.getElementById('albmp-cb-'+id);
+  cb.checked=!cb.checked;
+  div.style.background=cb.checked?'rgba(245,166,35,0.12)':'rgba(255,255,255,0.04)';
+  div.style.borderColor=cb.checked?'rgba(245,166,35,0.4)':'var(--borde)';
+  actualizarAlbmpTotales();
+}
+
+function actualizarAlbmpTotales(){
+  const matEl=document.getElementById('albmp-material-lista');
+  const timEl=document.getElementById('albmp-tiempos-lista');
+  const lineas=matEl._lineas||[];
+  const tims=timEl._tiempos||[];
+  let totMat=0,totMO=0;
+  lineas.forEach((l,i)=>{
+    const cb=document.getElementById('albmp-cb-mat-'+i);
+    if(cb&&cb.checked) totMat+=parseFloat(l.cant||0)*parseFloat(l.pventa||0);
+  });
+  tims.forEach((t,i)=>{
+    const cb=document.getElementById('albmp-cb-tim-'+i);
+    if(cb&&cb.checked) totMO+=parseFloat(t.importe||0);
+  });
+  document.getElementById('albmp-tot-mat').textContent=fmt(totMat);
+  document.getElementById('albmp-tot-mo').textContent=fmt(totMO);
+  document.getElementById('albmp-tot-total').textContent=fmt(totMat+totMO);
+}
+
+function getAlbmpSeleccionados(){
+  const matEl=document.getElementById('albmp-material-lista');
+  const timEl=document.getElementById('albmp-tiempos-lista');
+  const lineas=(matEl._lineas||[]).filter((l,i)=>document.getElementById('albmp-cb-mat-'+i)?.checked);
+  const tims=(timEl._tiempos||[]).filter((t,i)=>document.getElementById('albmp-cb-tim-'+i)?.checked);
+  return {lineas,tims};
+}
+
+async function confirmarAlbaranDesdeImp(){
+  const proy=document.getElementById('albmp-proyecto').value;
+  const num=document.getElementById('albmp-num').value.trim();
+  const fecha=document.getElementById('albmp-fecha').value;
+  const op=document.getElementById('albmp-operario').value;
+  const notas=document.getElementById('albmp-notas').value;
+  const {lineas,tims}=getAlbmpSeleccionados();
+  if(!num||!proy){toast('Rellena número y proyecto','error');return;}
+  if(lineas.length===0&&tims.length===0){toast('Selecciona al menos una línea','error');return;}
+
+  const totMat=lineas.reduce((s,l)=>s+parseFloat(l.cant||0)*parseFloat(l.pventa||0),0);
+  const totMO=tims.reduce((s,t)=>s+parseFloat(t.importe||0),0);
+  const total=(totMat+totMO).toFixed(2);
+
+  const id=Date.now().toString();
+  const albLineas=[
+    ...lineas.map(l=>({ref:l.ref||'',desc:l.desc,cant:l.cant,uni:l.uni||'ud',pventa:parseFloat(l.pventa||0),importe:parseFloat(l.cant||0)*parseFloat(l.pventa||0),tipo:'material'})),
+  ];
+  const albHoras=tims.map(t=>({op:t.operario,ini:t.ini||'',fin:t.fin||'',horas:t.horas,precio:t.precio,importe:parseFloat(t.importe||0),tipo:t.tipo||''}));
+
+  const obj={id,num,fecha,proyecto:proy,operario:op,notas,total,lineas:JSON.stringify(albLineas),horas:JSON.stringify(albHoras)};
+  DB.albaranes.push(obj);
+  albLineas.forEach(l=>DB.albLineas.push({albId:id,albNum:num,...l}));
+  albHoras.forEach(h=>DB.albHoras.push({albId:id,albNum:num,...h}));
+
+  // Marcar tiempos como facturados
+  tims.forEach(t=>{
+    const tim=DB.tiempos.find(x=>x.id===t.id);
+    if(tim){tim.facturado='si';if(gsConnected)gsUpdate(SHEETS.TIEMPOS,'id',t.id,[t.id,t.fecha,t.proyecto,t.operario,t.tipo,t.ini,t.fin,t.horas,t.precio,t.importe,t.notas,'si']);}
+  });
+
+  guardarLocalCache();
+  if(gsConnected){
+    await gsPost('append',{hoja:SHEETS.ALBARANES,fila:[id,num,fecha,proy,op,notas,total]});
+    for(const l of albLineas) await gsPost('append',{hoja:SHEETS.ALB_LINEAS,fila:[id,num,l.ref,l.desc,l.cant,l.uni,l.pventa,l.importe.toFixed(2),l.tipo]});
+    for(const h of albHoras) await gsPost('append',{hoja:SHEETS.ALB_HORAS,fila:[id,num,h.op,h.ini,h.fin,h.horas,h.precio,h.importe.toFixed(2)]});
+  }
+
+  cerrarModal('modal-alb-imp');
+  renderAlbaranes();renderDashboard();
+  toast('Albarán '+num+' generado');
+  if(confirm('¿Ver el albarán en PDF?')) imprimirAlbaranDatos(obj,albLineas,albHoras);
+}
+
+function previewAlbaranDesdeImp(){
+  const proy=document.getElementById('albmp-proyecto').value;
+  const num=document.getElementById('albmp-num').value||'BORRADOR';
+  const fecha=document.getElementById('albmp-fecha').value;
+  const op=document.getElementById('albmp-operario').value;
+  const notas=document.getElementById('albmp-notas').value;
+  const {lineas,tims}=getAlbmpSeleccionados();
+  const albLineas=lineas.map(l=>({ref:l.ref||'',desc:l.desc,cant:l.cant,uni:l.uni||'ud',pventa:parseFloat(l.pventa||0),importe:parseFloat(l.cant||0)*parseFloat(l.pventa||0)}));
+  const albHoras=tims.map(t=>({op:t.operario,ini:t.ini||'',fin:t.fin||'',horas:t.horas,precio:t.precio,importe:parseFloat(t.importe||0)}));
+  imprimirAlbaranDatos({num,fecha,proyecto:proy,operario:op,notas},albLineas,albHoras);
+}
+
+// ════════════════════════════════════════════════════════
+// ADMIN
+// ════════════════════════════════════════════════════════
+function renderAdmin(){
+  if(SESSION.rol!=='admin'){
+    document.getElementById('page-admin-content').innerHTML='<div class="empty-state"><div class="empty-icon">🔒</div><p>Sin acceso</p></div>';
+    return;
+  }
+  const content=document.getElementById('page-admin-content');
+  content.innerHTML=`
+    <!-- GOOGLE SHEETS CONFIG -->
+    <div class="card">
+      <div class="card-title">☁️ Conexión Google Sheets</div>
+      <div id="gs-status-admin" class="${gsConnected?'sync-bar':'sync-bar warning'}" style="margin-bottom:14px">
+        <span class="sync-dot"></span>
+        <span>${gsConnected?'Conectado':'Sin configurar'}</span>
+      </div>
+      <label>ID del Google Sheet</label>
+      <input type="text" id="cfg-sheet-id" value="${CONFIG.SHEET_ID}" placeholder="1BxiMVs0XRA...">
+      <label>API Key (lectura)</label>
+      <input type="text" id="cfg-api-key" value="${CONFIG.API_KEY}" placeholder="AIzaSy...">
+      <label>Apps Script URL (escritura)</label>
+      <input type="text" id="cfg-apps-url" value="${CONFIG.APPS_SCRIPT_URL}" placeholder="https://script.google.com/macros/s/...">
+      <button class="btn btn-primary" onclick="guardarConfigGS()">💾 Guardar configuración</button>
+      <button class="btn btn-ghost" onclick="testConexion()" style="margin-top:6px">🔌 Probar conexión</button>
+      <button class="btn btn-naranja" onclick="mostrarURLiPhone()" style="margin-top:6px">📱 Generar URL para iPhone</button>
+      <div class="sep">Guía de configuración</div>
+      ${guiaConfigHTML()}
+    </div>
+
+    <!-- USUARIOS -->
+    <div class="card">
+      <div class="card-title">👤 Gestión de Usuarios</div>
+      ${renderUsuariosAdmin()}
+      <div class="sep">Nuevo usuario</div>
+      <div class="row2">
+        <div><label>Usuario</label><input type="text" id="nu-user" placeholder="operario3"></div>
+        <div><label>Contraseña</label><input type="text" id="nu-pass" placeholder="1234ab"></div>
+      </div>
+      <label>Nombre completo</label>
+      <input type="text" id="nu-nombre" placeholder="María Sánchez">
+      <label>Rol</label>
+      <select id="nu-rol"><option value="operario">Operario</option><option value="admin">Administrador</option></select>
+      <button class="btn btn-success" onclick="addUsuario()">+ Añadir usuario</button>
+    </div>
+
+    <!-- CATEGORÍAS -->
+    <div class="card">
+      <div class="card-title">🏷️ Categorías de Artículos</div>
+      <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px">Solo administradores pueden gestionar categorías.</p>
+      <div id="lista-cats-admin"></div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <input type="text" id="nueva-cat-input" placeholder="Nueva categoría..." style="flex:1">
+        <button class="btn btn-success btn-sm" onclick="addCategoria()" style="margin-top:0;white-space:nowrap">+ Añadir</button>
+      </div>
+    </div>
+
+    <!-- SINCRONIZACIÓN -->
+    <div class="card">
+      <div class="card-title">🔄 Sincronización</div>
+      <button class="btn btn-ghost" onclick="sincronizarAhora()">↻ Sincronizar ahora</button>
+      <button class="btn btn-ghost" onclick="exportarTodo()" style="margin-top:8px">📥 Exportar todo (JSON)</button>
+    </div>
+  `;
+}
+
+function guiaConfigHTML(){
+  return `
+  <div class="step-item"><div class="step-num">1</div><div class="step-content">
+    <div class="step-title">Crea el Google Sheet</div>
+    <div class="step-desc">Ve a <b>sheets.google.com</b> y crea una hoja nueva. Copia el ID que aparece en la URL entre /d/ y /edit.</div>
+    <div class="code-box">https://docs.google.com/spreadsheets/d/<b style="color:#f5a623">ESTE_ES_EL_ID</b>/edit
+      <button class="copy-btn" onclick="copyText('sheets.google.com')">Abrir</button>
+    </div>
+  </div></div>
+  <div class="step-item"><div class="step-num">2</div><div class="step-content">
+    <div class="step-title">Crea estas pestañas exactas</div>
+    <div class="step-desc">En el Sheet, crea 9 pestañas con estos nombres (tal cual, en mayúsculas):</div>
+    <div class="code-box">USUARIOS · CLIENTES · PROYECTOS · CATALOGO · PRESUPUESTOS · PRES_LINEAS · ALBARANES · ALB_LINEAS · ALB_HORAS
+      <button class="copy-btn" onclick="copyText('USUARIOS\tCLIENTES\tPROYECTOS\tCATALOGO\tPRESUPUESTOS\tPRES_LINEAS\tALBARANES\tALB_LINEAS\tALB_HORAS')">Copiar</button>
+    </div>
+  </div></div>
+  <div class="step-item"><div class="step-num">3</div><div class="step-content">
+    <div class="step-title">Habilita la Google Sheets API</div>
+    <div class="step-desc">Ve a <b>console.cloud.google.com</b> → Crear proyecto → APIs y servicios → Google Sheets API → Activar → Credenciales → Crear clave de API. Copia la clave aquí arriba.</div>
+  </div></div>
+  <div class="step-item"><div class="step-num">4</div><div class="step-content">
+    <div class="step-title">Configura el Apps Script (escritura)</div>
+    <div class="step-desc">En el Google Sheet: Extensiones → Apps Script. Pega este código y haz clic en "Implementar" → Nueva implementación → Aplicación web → Acceso para todos.</div>
+    <div class="code-box" style="font-size:.7rem">function doPost(e){
+  var d=JSON.parse(e.postData.contents);
+  var ss=SpreadsheetApp.getActiveSpreadsheet();
+  var sh=ss.getSheetByName(d.datos.hoja);
+  if(d.accion==='append') sh.appendRow(d.datos.fila);
+  return ContentService.createTextOutput(JSON.stringify({ok:true})).setMimeType(ContentService.MimeType.JSON);
+}
+      <button class="copy-btn" onclick="copyAppsScript()">Copiar</button>
+    </div>
+    <div class="step-desc" style="margin-top:6px">Tras implementar, copia la URL del script en el campo de arriba.</div>
+  </div></div>
+  <div class="step-item"><div class="step-num">5</div><div class="step-content">
+    <div class="step-title">Haz el Sheet público para lectura</div>
+    <div class="step-desc">En el Sheet: Compartir → Cambiar a "Cualquier persona con el enlace puede ver". Esto permite leer los datos con la API Key.</div>
+  </div></div>`;
+}
+
+function copyAppsScript(){
+  const code=`function doPost(e){\n  var d=JSON.parse(e.postData.contents);\n  var ss=SpreadsheetApp.getActiveSpreadsheet();\n  var sh=ss.getSheetByName(d.datos.hoja);\n  if(d.accion==='append') sh.appendRow(d.datos.fila);\n  return ContentService.createTextOutput(JSON.stringify({ok:true})).setMimeType(ContentService.MimeType.JSON);\n}`;
+  navigator.clipboard.writeText(code).catch(()=>{});
+  toast('Código copiado');
+}
+
+function renderUsuariosAdmin(){
+  const users=DB.usuarios.length?DB.usuarios:USERS_DEFAULT;
+  return `<div>${users.map(u=>`
+    <div class="list-item" style="cursor:default">
+      <div class="list-item-left">
+        <div class="list-item-title">${u.nombre||u.user}</div>
+        <div class="list-item-sub">${u.user} · ${u.rol}</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span class="role-badge ${u.rol==='admin'?'role-admin':'role-op'}">${u.rol}</span>
+        <button class="btn-xs btn-ghost" data-id="${u.id}" onclick="cambiarPasswordUsuario(this.dataset.id)">🔑</button>
+        <button class="btn-xs btn-danger" data-id="${u.id}" onclick="eliminarUsuario(this.dataset.id)">🗑</button>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+async function addUsuario(){
+  if(SESSION.rol!=='admin'){toast('Solo el administrador puede crear usuarios','error');return;}
+  const user=document.getElementById('nu-user').value.trim();
+  const pass=document.getElementById('nu-pass').value.trim();
+  const nombre=document.getElementById('nu-nombre').value.trim();
+  const rol=document.getElementById('nu-rol').value;
+  if(!user||!pass||!nombre){toast('Completa todos los campos','error');return;}
+  if(DB.usuarios.find(u=>u.user===user)){toast('Ese usuario ya existe','error');return;}
+  const obj={id:Date.now().toString(),user,pass,nombre,rol};
+  DB.usuarios.push(obj);
+  guardarLocalCache();
+  if(gsConnected) await gsPost('append',{hoja:SHEETS.USUARIOS,fila:[obj.id,user,pass,nombre,rol]});
+  toast('Usuario '+nombre+' creado');
+  renderAdmin();
+}
+
+async function eliminarUsuario(id){
+  if(SESSION.rol!=='admin'){toast('Sin acceso','error');return;}
+  if(String(id)===String(SESSION.id)){toast('No puedes eliminarte a ti mismo','error');return;}
+  if(!confirm('¿Eliminar este usuario?'))return;
+  DB.usuarios=DB.usuarios.filter(u=>String(u.id)!==String(id));
+  guardarLocalCache();
+  if(gsConnected) await gsDelete(SHEETS.USUARIOS,'id',id);
+  toast('Usuario eliminado');
+  renderAdmin();
+}
+
+async function cambiarPasswordUsuario(id){
+  if(SESSION.rol!=='admin'){toast('Sin acceso','error');return;}
+  const u=DB.usuarios.find(x=>String(x.id)===String(id));
+  if(!u)return;
+  const nueva=prompt('Nueva contraseña para '+u.nombre+':');
+  if(!nueva||nueva.length<4){toast('Contraseña demasiado corta (mínimo 4 caracteres)','error');return;}
+  u.pass=nueva;
+  guardarLocalCache();
+  if(gsConnected) await gsUpdate(SHEETS.USUARIOS,'id',id,[u.id,u.user,nueva,u.nombre,u.rol]);
+  toast('Contraseña actualizada');
+}
+
+function guardarConfigGS(){
+  const id=document.getElementById('cfg-sheet-id').value.trim();
+  const key=document.getElementById('cfg-api-key').value.trim();
+  const url=document.getElementById('cfg-apps-url').value.trim();
+  CONFIG.SHEET_ID=id;CONFIG.API_KEY=key;CONFIG.APPS_SCRIPT_URL=url;
+  localStorage.setItem('gs_sheet_id',id);
+  localStorage.setItem('gs_api_key',key);
+  localStorage.setItem('gs_apps_script_url',url);
+  // Generate iPhone URL with config embedded
+  const base=window.location.href.split('?')[0];
+  const iPhoneURL=base+'?gsurl='+encodeURIComponent(url)+'&gsid='+encodeURIComponent(id);
+  localStorage.setItem('iphone_url', iPhoneURL);
+  toast('Configuración guardada. Recargando...');
+  setTimeout(()=>location.reload(),1200);
+}
+
+function mostrarURLiPhone(){
+  const url=localStorage.getItem('iphone_url');
+  const url2=CONFIG.APPS_SCRIPT_URL?
+    (window.location.href.split('?')[0]+'?gsurl='+encodeURIComponent(CONFIG.APPS_SCRIPT_URL)+'&gsid='+encodeURIComponent(CONFIG.SHEET_ID||''))
+    :'';
+  const final=url||url2;
+  if(!final||!CONFIG.APPS_SCRIPT_URL){
+    toast('Primero guarda la configuración de Google Sheets','error');
+    return;
+  }
+  const modal=document.createElement('div');
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML=`
+    <div style="background:var(--panel);border-radius:16px;padding:24px;width:100%;max-width:400px;border:1px solid var(--borde)">
+      <h3 style="color:var(--acento);margin-bottom:12px;font-size:1rem">📱 URL para iPhone</h3>
+      <p style="font-size:.8rem;color:var(--muted);margin-bottom:12px;line-height:1.5">
+        Esta URL lleva la configuración incluida. Ábrela en Safari del iPhone y añádela a la pantalla de inicio. No tendrás que configurar nada cada vez.
+      </p>
+      <div style="background:rgba(0,0,0,.4);border-radius:8px;padding:12px;font-size:.72rem;color:var(--acento);word-break:break-all;margin-bottom:14px">${final}</div>
+      <button onclick="navigator.clipboard.writeText('${final}').then(()=>this.textContent='✓ Copiado!').catch(()=>{})" 
+        style="width:100%;padding:12px;background:var(--acento);color:#000;border:none;border-radius:10px;font-weight:700;cursor:pointer;margin-bottom:8px">
+        📋 Copiar URL
+      </button>
+      <button onclick="this.parentNode.parentNode.remove()" 
+        style="width:100%;padding:10px;background:rgba(255,255,255,.1);color:var(--text);border:none;border-radius:10px;cursor:pointer">
+        Cerrar
+      </button>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+async function testConexion(){
+  toast('Probando conexión...');
+  try {
+    const r=await gsGet(SHEETS.USUARIOS);
+    if(r!==null){toast('✓ Conexión OK — Google Sheets activo');gsConnected=true;setSyncStatus('ok');}
+    else toast('✗ Sin conexión — revisa la Apps Script URL','error');
+  } catch(e) { toast('✗ Error: '+e.message,'error'); }
+}
+
+async function sincronizarAhora(){
+  await cargarTodo();
+  renderPagina(document.querySelector('.page.active').id.replace('page-',''));
+  toast('Sincronizado');
+}
+
+function exportarTodo(){
+  const json=JSON.stringify(DB,null,2);
+  const b=new Blob([json],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='electrogest_backup.json';a.click();
+}
+
+// ════════════════════════════════════════════════════════
+// MODALES
+// ════════════════════════════════════════════════════════
+function abrirModal(id){document.getElementById(id).classList.add('open');}
+function cerrarModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});
+});
+
+// ════════════════════════════════════════════════════════
+// TOAST
+// ════════════════════════════════════════════════════════
+function toast(msg,tipo=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast'+(tipo==='error'?' error':'');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+function copyText(txt){
+  navigator.clipboard.writeText(txt).catch(()=>{});
+  toast('Copiado al portapapeles');
+}
+
+// ════════════════════════════════════════════════════════
+// CREACIÓN RÁPIDA DE ARTÍCULO
+// ════════════════════════════════════════════════════════
+function copiarArticulo(ref, contexto){
+  const a = DB.catalogo.find(x=>x.ref===ref);
+  if(!a) return;
+  // Open quick-create with data from original article
+  document.getElementById('art-rapido-contexto').value=contexto;
+  document.getElementById('art-rap-desc').value=a.desc+' (copia)';
+  document.getElementById('art-rap-ref').value='';   // Must enter new ref
+  document.getElementById('art-rap-uni').value=a.uni||'ud';
+  document.getElementById('art-rap-cat').value=a.cat||'Varios';
+  document.getElementById('art-rap-coste').value=parseFloat(a.coste||0).toFixed(2);
+  document.getElementById('art-rap-margen').value=parseFloat(a.margen||0);
+  document.getElementById('art-rap-pventa').value=(parseFloat(a.coste||0)*(1+parseFloat(a.margen||0)/100)).toFixed(2);
+  document.getElementById('art-rap-stock').value='0';
+  document.getElementById('art-rap-min').value=a.min||5;
+  // Update modal title to indicate copy mode
+  document.querySelector('#modal-art-rapido .modal-head h3').textContent='⧉ Copiar Artículo';
+  poblarSelectCats('art-rap-cat',a.cat||'');
+  abrirModal('modal-art-rapido');
+}
+
+function abrirArtRapido(contexto, texto){
+  document.getElementById('art-rapido-contexto').value=contexto;
+  document.getElementById('art-rap-desc').value=texto||'';
+  document.getElementById('art-rap-ref').value='';
+  document.getElementById('art-rap-uni').value='ud';
+  document.getElementById('art-rap-coste').value='';
+  document.getElementById('art-rap-margen').value='0';
+  document.getElementById('art-rap-pventa').value='';
+  document.getElementById('art-rap-stock').value='0';
+  document.getElementById('art-rap-min').value='5';
+  document.querySelector('#modal-art-rapido .modal-head h3').textContent='⚡ Crear Artículo Rápido';
+  poblarSelectCats('art-rap-cat','');
+  abrirModal('modal-art-rapido');
+}
+
+function calcArtRapVenta(){
+  const c=parseFloat(document.getElementById('art-rap-coste').value)||0;
+  const mRaw=document.getElementById('art-rap-margen').value;
+  const m=mRaw===''?0:parseFloat(mRaw)||0;
+  document.getElementById('art-rap-pventa').value=(c*(1+m/100)).toFixed(2);
+}
+
+function cerrarModalArtRapido(){
+  cerrarModal('modal-art-rapido');
+}
+
+async function guardarArtRapido(){
+  const ref=document.getElementById('art-rap-ref').value.trim();
+  const desc=document.getElementById('art-rap-desc').value.trim();
+  const uni=document.getElementById('art-rap-uni').value.trim()||'ud';
+  const cat=document.getElementById('art-rap-cat').value;
+  const coste=parseFloat(document.getElementById('art-rap-coste').value)||0;
+  const margen=parseFloat(document.getElementById('art-rap-margen').value)||30;
+  const stock=parseFloat(document.getElementById('art-rap-stock').value)||0;
+  const min=parseFloat(document.getElementById('art-rap-min').value)||5;
+  const contexto=document.getElementById('art-rapido-contexto').value;
+  if(!ref||!desc){toast('Referencia y descripción son obligatorias','error');return;}
+  if(DB.catalogo.find(a=>a.ref===ref)){toast('Esa referencia ya existe','error');return;}
+  const sinStockR=document.getElementById('art-rap-sin-stock').checked?'1':'0';
+  const obj={ref,desc,cat,uni,coste,margen,stock,min,max:100,proveedor:'',sin_stock:sinStockR};
+  DB.catalogo.push(obj);
+  guardarLocalCache();
+  if(gsConnected) await gsPost('append',{hoja:SHEETS.CATALOGO,fila:[ref,desc,cat,uni,coste,margen,stock,min,100,'',sinStockR]});
+  cerrarModal('modal-art-rapido');
+  toast('Artículo "'+desc+'" creado ✓');
+  // Auto-select in the right context
+  if(contexto==='presupuesto') elegirArtPresupuesto(ref);
+  else if(contexto==='compra')  elegirArtCompra(ref);
+  else if(contexto==='imputar') addImpSeleccionado(ref);
+  else if(contexto==='albaran') albAutoFillRef(ref);
+}
+
+// ════════════════════════════════════════════════════════
+// UTILS
+// ════════════════════════════════════════════════════════
+function poblarSelectCats(selectId, valorActual){
+  const sel=document.getElementById(selectId);
+  if(!sel)return;
+  const cats=getCatNombres();
+  sel.innerHTML=cats.map(c=>`<option value="${c}" ${c===valorActual?'selected':''}>${c}</option>`).join('');
+}
+
+function toggleArtStock(){
+  const checked=document.getElementById('art-sin-stock').checked;
+  document.getElementById('art-stock-campos').style.display=checked?'none':'block';
+}
+function toggleArtRapStock(){
+  const checked=document.getElementById('art-rap-sin-stock').checked;
+  document.getElementById('art-rap-stock-campos').style.display=checked?'none':'block';
+}
+
+function getCatsDefault(){
+  return ['Cables','Tubería','Cajas','Mecanismos','Protección','Conectores','Fijación','Cinta/Señ.','Varios']
+    .map((n,i)=>({id:String(i+1),nombre:n}));
+}
+
+function getCatNombres(){
+  const cats=DB.categorias.length?DB.categorias:getCatsDefault();
+  return cats.map(c=>c.nombre||c);
+}
+
+function fmt(n){return Number(n).toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';}
+
+// ════════════════════════════════════════════════════════
+// AUTOARRANQUE
+// ════════════════════════════════════════════════════════
+(async function init(){
+  // Cargar usuarios desde GSheets ANTES de mostrar login, para que
+  // los usuarios nuevos creados desde Admin puedan iniciar sesión
+  cargarDesdeLocal(); // primero caché local como fallback inmediato
+  try{
+    const usuariosGS = await gsGet(SHEETS.USUARIOS);
+    if(usuariosGS !== null && usuariosGS.length){
+      DB.usuarios = usuariosGS;
+      guardarLocalCache();
+    }
+  }catch(e){ /* sin conexión, se queda con caché local */ }
+
+  const s=localStorage.getItem('session');
+  if(s){SESSION=JSON.parse(s);iniciarApp();}
+})();
+</script>
+</body>
+</html>
